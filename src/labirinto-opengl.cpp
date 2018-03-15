@@ -16,14 +16,6 @@
 	jogador perde uma “vida”.
 [-]	O jogo acaba quando ele atravessar sem tocar (vitória) ou bate 4 vezes em uma
 	parede (derrota).
-	Outras características:
-[x]	1 - O objeto deve estar preenchido com uma cor de escolha da dupla;
-[x]	2 - A largura do labirinto deve ser 1,5 vezes (aproximadamente) o tamanho do objeto;
-[x]	3 - Utilizar as setas do teclado para movimento do objeto no labirinto.
-[x]	4 – O botão esquerdo do mouse deve ser usado para mudar as cores da janela, do
-	labirinto e do objeto.
-[x]	5 - Outros requisitos para o funcionamento do jogo (dimensões, cores, formato do
-	labirinto etc..) podem ser definidos pela dupla.
  */
 
 #include <GL/glut.h>
