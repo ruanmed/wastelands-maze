@@ -1,6 +1,6 @@
 //============================================================================
 // Name        : labirinto-opengl.cpp
-// Author      : Ricardo Valério Teixeira de Medeiros Silva e Ruan de Medeiros Bahia
+// Author      : Ricardo Valério Teixeira de Medeiros Silva, Ruan de Medeiros Bahia e Jose Adolfo de Castro Neto
 // Version     :
 // Copyright   : 
 // Description : Jogo de labirinto feito com OpenGL
@@ -24,7 +24,10 @@
 #include <string.h>
 #include <effolkronium/random.hpp>
 #include <conversorSR.hpp>
-#include <locale.h>
+
+/*#include "../include/effolkronium/random.hpp"
+#include "../include/conversorSR.hpp"
+*/#include <locale.h>
 #include <vector>
 #ifdef _WIN32
     #include <windows.h>
@@ -94,7 +97,7 @@ void novaCor(int elemento); // CIRCLE_COLOR || MAZE_COLOR || BACK_COLOR || FLASH
 
 //======================================================================//
 void atualizarJanela(){
-	sprintf(tituloJanela, "Wastelands Maze by Ricardo e Ruan Medeiros - Vidas: %d - Nivel: %d", vidas, GAME_LEVEL);
+	sprintf(tituloJanela, "Wastelands Maze by Ricardo e Ruan Medeiros e Jose Adolfo - Vidas: %d - Nivel: %d", vidas, GAME_LEVEL);
 	glutSetWindowTitle(tituloJanela);
 }
 void retornarInicio() {	//	Retorna círculo para o início do labirinto
@@ -385,19 +388,19 @@ void desenhaParabens(){
 void novaCor(int elemento){
 	switch (elemento) {
 		case CIRCLE_COLOR:
-			corCircR = Random::get(0,255)/255.0;
-			corCircG = Random::get(0,255)/255.0;
-			corCircB = Random::get(0,255)/255.0;
+			//corCircR = Random::get(0,255)/255.0;
+			//corCircG = Random::get(0,255)/255.0;
+			//corCircB = Random::get(0,255)/255.0;
 			break;
 		case MAZE_COLOR:
-			corLabiR = Random::get(0,255)/255.0;
-			corLabiG = Random::get(0,255)/255.0;
-			corLabiB = Random::get(0,255)/255.0;
+			//corLabiR = Random::get(0,255)/255.0;
+			//corLabiG = Random::get(0,255)/255.0;
+			//corLabiB = Random::get(0,255)/255.0;
 			break;
 		case BACK_COLOR:
-			corFundR = Random::get(0,255)/255.0;
-			corFundG = Random::get(0,255)/255.0;
-			corFundB = Random::get(0,255)/255.0;
+			//corFundR = Random::get(0,255)/255.0;
+			//corFundG = Random::get(0,255)/255.0;
+			//corFundB = Random::get(0,255)/255.0;
 			break;
 		case RESET_COLOR:
 			corCircR = corCircG = corCircB = 0.9;
