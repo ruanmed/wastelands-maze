@@ -248,9 +248,34 @@ void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter
 
 	glColor3f(corCircR, corCircG, corCircB);
 
+	double luz=raio*10;
+	glColor3f(corFundR, corFundG, corFundB);
+	glBegin(GL_QUADS);
+		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
+		glVertex2f(xc-luz,ORTHO_BOTTOM);
+		glVertex2f(xc-luz,ORTHO_TOP);
+
+		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
+		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
+		glVertex2f(xc+luz,ORTHO_BOTTOM);
+		glVertex2f(xc+luz,ORTHO_TOP);
+
+		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
+		glVertex2f(ORTHO_RIGHT,yc+luz);
+		glVertex2f(ORTHO_LEFT,yc+luz);
+
+		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
+		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
+		glVertex2f(ORTHO_RIGHT,yc-luz);
+		glVertex2f(ORTHO_LEFT,yc-luz);
+	glEnd();
+
 	glPointSize(CIRCLE_POINT_SIZE); // aumenta o tamanho dos pontos
     	glBegin(GL_POINTS);
-		   while(raio>0) {
+    		glColor3f(corCircR, corCircG, corCircB);
+    		while(raio>0) {
 
 				for(theta = 0; theta <0.8;theta+=0.01)
 				{
@@ -268,6 +293,22 @@ void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter
 				raio -= 0.1;
 			}
 			raio = CIRCLE_RADIUS;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     	glEnd();
     //glutSwapBuffers();
