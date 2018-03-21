@@ -248,7 +248,7 @@ void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter
 
 	glColor3f(corCircR, corCircG, corCircB);
 
-	double luz=raio*10;
+	double luz=raio*3.5;
 	glColor3f(corFundR, corFundG, corFundB);
 	glBegin(GL_QUADS);
 		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
@@ -355,27 +355,27 @@ void desenhaBoasVindas(){
 	//glRotatef(15, 0,0,1); // rotaciona o texto
 	int textoX =  ORTHO_LEFT*0.8, textoY = ORTHO_TOP*0.8;
 	glRasterPos2f(textoX,textoY);
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"Mova o círculo para fora do labirinto (sair pelas bordas) para subir de nível.");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"Mova o circulo para fora do labirinto (sair pelas bordas) para subir de nivel.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- MOVIMENTOS: Utilize as setas do teclado para mover o círculo.");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"- MOVIMENTOS: Utilize as setas do teclado para mover o circulo.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- CORES: Para mudar a cor de qualquer objeto (CÍRCULO, PAREDES DO LABIRINTO, FUNDO) ");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"- CORES: Para mudar a cor de qualquer objeto (CIRCULO, PAREDES DO LABIRINTO, FUNDO) ");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"         basta clicar no objeto em questão.");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"         basta clicar no objeto em questao.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DESAFIO: Se o círculo se mover em direção a qualquer parede do labirinto");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DESAFIO: Se o circulo se mover em direcao a qualquer parede do labirinto");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"           então ele volta a posição inicial no labirinto e perde uma vida.");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"           entao ele volta a posicao inicial no labirinto e perde uma vida.");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto(GLUT_BITMAP_9_BY_15,"- FIM: O jogo acaba quando suas vidas terminarem.");
 	glColor3f(0,1,1);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"                   PRESSIONE BARRA DE ESPAÇOS PARA COMEÇAR");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"                   PRESSIONE BARRA DE ESPACOS PARA COMECAR");
 	glColor3f(1,1,1);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DICA: A barra de espaços também funciona para fazer o círculo piscar.");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DICA: A barra de espacos tambem funciona para fazer o circulo piscar.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DICA 2: Ao subir de nível você fica novamente com 4 vidas.");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DICA 2: Ao subir de nivel voce fica novamente com 4 vidas.");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto(GLUT_BITMAP_9_BY_15,"BOA SORTE E BOM JOGO!");
 }
@@ -396,7 +396,7 @@ void desenhaNovoNivel(){
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto(GLUT_BITMAP_9_BY_15, nivel);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"PRESSIONE BARRA DE ESPAÇOS PARA CONTINUAR NO LABIRINTO");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"PRESSIONE BARRA DE ESPACOS PARA CONTINUAR NO LABIRINTO");
 }
 void desenhaFimDeJogo(){
 	char mensagem[50];
@@ -415,12 +415,12 @@ void desenhaFimDeJogo(){
 	desenhaTexto(GLUT_BITMAP_9_BY_15,"FIM DE JOGO");
 	glColor3f(1,1,1);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"Uma pena! Tente jogar melhor da próxima vez!");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"Uma pena! Tente jogar melhor da proxima vez!");
 	glRasterPos2f(textoX,(textoY-=50));
-	sprintf(mensagem, "Pelo menos tu chegou ao nível %d.", GAME_LEVEL);
+	sprintf(mensagem, "Pelo menos tu chegou ao nivel %d.", GAME_LEVEL);
 	desenhaTexto(GLUT_BITMAP_9_BY_15, mensagem);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"PRESSIONE BARRA DE ESPAÇOS PARA REINICIAR O JOGO");
+	desenhaTexto(GLUT_BITMAP_9_BY_15,"PRESSIONE BARRA DE ESPACOS PARA REINICIAR O JOGO");
 }
 void desenhaParabens(){
 
@@ -522,24 +522,24 @@ void menuPrincipal(int op){
 void exibirMenu() {
 	int menu, dificuldade, opcoes, cores;
 	dificuldade = glutCreateMenu(menuDificuldade);
-		glutAddMenuEntry("[+] Aumentar nível",1);
-		glutAddMenuEntry("[-] Diminuir nível",2);
-		glutAddMenuEntry("[++] Aumentar 10 níveis",3);
-		glutAddMenuEntry("[--] Diminuir 10 níveis",4);
+		glutAddMenuEntry("[+] Aumentar nivel",1);
+		glutAddMenuEntry("[-] Diminuir nivel",2);
+		glutAddMenuEntry("[++] Aumentar 10 niveis",3);
+		glutAddMenuEntry("[--] Diminuir 10 niveis",4);
 	opcoes = glutCreateMenu(menuOpcoes);
-		glutAddMenuEntry("Reiniciar jogo (volta ao nível 1)",1);
-		glutAddMenuEntry("Reiniciar jogo (volta à tela inicial)",2);
-		glutAddMenuEntry("Resetar labirinto (continua no nível atual",3);
+		glutAddMenuEntry("Reiniciar jogo (volta ao nivel 1)",1);
+		glutAddMenuEntry("Reiniciar jogo (volta a tela inicial)",2);
+		glutAddMenuEntry("Resetar labirinto (continua no nivel atual",3);
 		glutAddMenuEntry("Resetar cores",4);
-		glutAddMenuEntry("Voltar ao início do level atual",5);
+		glutAddMenuEntry("Voltar ao inicio do level atual",5);
 	cores = glutCreateMenu(menuCores);
-		glutAddMenuEntry("Mudar cor do círculo",1);
+		glutAddMenuEntry("Mudar cor do circulo",1);
 		glutAddMenuEntry("Mudar cor das paredes do labirinto",2);
 		glutAddMenuEntry("Mudar cor do fundo",3);
 		glutAddMenuEntry("Resetar cores",4);
 	menu = glutCreateMenu(menuPrincipal);
 		glutAddSubMenu("Dificuldade",dificuldade);
-		glutAddSubMenu("Opções",opcoes);
+		glutAddSubMenu("Opcoes",opcoes);
 		glutAddSubMenu("Cores",cores);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
