@@ -145,9 +145,8 @@ bool isOnLimit(int x,int y)
 	else
 		return false;
 }
-void verificarColisao(){
-	double theta;
-	for(theta = 0; theta <0.8;theta+=0.01) {
+bool verificarColisao(){
+	for(double theta = 0; theta <0.8;theta+=0.01) {
 		x = (int)(raio*cos(theta));
 		y = (int)(raio*sin(theta));
 
@@ -161,10 +160,12 @@ void verificarColisao(){
 				isOnMaze(xc+(-y),yc+(-x)) ||
 				isOnMaze(xc+(y),yc+(-x))
 				) {
-			retornarInicio();
-			vidas--;
-			break;
+			//retornarInicio();
+			//vidas--;
+			return true;
 		}
+		else
+			return false;
 	}
 	//raio = CIRCLE_RADIUS;
 }
@@ -192,10 +193,14 @@ void verificarVitoria()
 			}
 		}
 }
-void verificarStatus()
+bool verificarStatus()
 {
-	verificarColisao();
+	bool status; // if true -> aconteceu colisão
+
+	status = verificarColisao();
 	verificarVitoria();
+
+	return status;
 }
 void generateRandomMaze()
 {
@@ -248,7 +253,7 @@ void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter
 
 	glColor3f(corCircR, corCircG, corCircB);
 
-	double luz=raio*3.5;
+	double luz=raio*5.5;
 	glColor3f(corFundR, corFundG, corFundB);
 	glBegin(GL_QUADS);
 		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
@@ -447,7 +452,8 @@ void novaCor(int elemento){
 			corCircR = corCircG = corCircB = 0.9;
 			corVidaR = corVidaG = 0;
 			corVidaB = 1;
-			corFundR = corFundG = corFundB = fabs(1-corCircR);
+			corFundR = 0.4;
+			corFundG = corFundB = fabs(1-corCircR);
 			corLabiR = corLabiG = corLabiB = 0.8;
 			break;
 		case FLASH_COLOR:
@@ -620,23 +626,32 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 }
 //======================================================================//
 void mySpecialFunc(int key, int x, int y){
+	double temp;
 	if (GAME_STATUS == GAME_START) {
 		switch (key) {
 			case GLUT_KEY_LEFT:
+				temp = xc;
 				xc -= CIRCLE_CENTER_DISPLACEMENT;
-				verificarStatus();
+				if (verificarStatus())
+					xc = temp;
 				break;
 			case GLUT_KEY_UP:
+				temp = yc;
 				yc += CIRCLE_CENTER_DISPLACEMENT;
-				verificarStatus();
+				if (verificarStatus())
+					yc = temp;
 				break;
 			case GLUT_KEY_RIGHT:
+				temp = xc;
 				xc += CIRCLE_CENTER_DISPLACEMENT;
-				verificarStatus();
+				if (verificarStatus())
+					xc = temp;
 				break;
 			case GLUT_KEY_DOWN:
+				temp = yc;
 				yc -= CIRCLE_CENTER_DISPLACEMENT;
-				verificarStatus();
+				if (verificarStatus())
+					yc = temp;
 				break;
 			default:
 				break;
@@ -748,6 +763,7 @@ void novaDificuldade(int nivel, bool resetarCores) {
 // Inicializa parâmetros de rendering
 void Inicializa (void)
 {
+	novaCor(RESET_COLOR);
 	glClearColor(corFundR, corFundG, corFundB, 0.0f);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
