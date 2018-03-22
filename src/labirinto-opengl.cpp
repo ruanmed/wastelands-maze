@@ -18,16 +18,19 @@
 	parede (derrota).
  */
 
+#include <GL/gl.h>
 #include <GL/glut.h>
+#include <FreeImage.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
 #include <effolkronium/random.hpp>
 #include <conversorSR.hpp>
-
-/*#include "../include/effolkronium/random.hpp"
-#include "../include/conversorSR.hpp"
-*/#include <locale.h>
+/*
+ * #include "../include/effolkronium/random.hpp"
+ * #include "../include/conversorSR.hpp"
+*/
+#include <locale.h>
 #include <vector>
 #ifdef _WIN32
     #include <windows.h>
@@ -47,10 +50,10 @@
 
 int GAME_STATUS = 1;
 int GAME_LEVEL = 1;
-int CIRCLE_RADIUS = 5*GAME_LEVEL;
+double CIRCLE_RADIUS = 5*GAME_LEVEL;
 bool CIRCLE_FLASH = false;
 double CIRCLE_RADIUS_DECREASE_TIME_CONSTANT = 30;
-double CIRCLE_POINT_SIZE = 2.0f;
+double CIRCLE_POINT_SIZE = 1.0f;
 double CIRCLE_CENTER_SPEED = (1/4.0);
 int CIRCLE_INITIAL_LIFE = 4;
 int ORTHO_WIDTH = 1920;
@@ -62,7 +65,7 @@ int ORTHO_TOP = (ORTHO_HEIGTH/2);
 double WINDOW_PROPORTION = 0.5;
 double WINDOW_WIDTH = (ORTHO_WIDTH*WINDOW_PROPORTION);
 double WINDOW_HEIGTH = (ORTHO_HEIGTH*WINDOW_PROPORTION);
-int MAZE_STEP = (CIRCLE_RADIUS*6);
+double MAZE_STEP = (CIRCLE_RADIUS*6);
 double CIRCLE_CENTER_DISPLACEMENT = CIRCLE_CENTER_SPEED*MAZE_STEP;
 double MAZE_LINE_SIZE = CIRCLE_RADIUS*(1.0/4.0);
 int MESH_WIDTH_PARTS = ORTHO_WIDTH/MAZE_STEP;
@@ -79,25 +82,28 @@ typedef struct {
 
 mesh **maze;
 
-int x,y;
-int xc = 0, yc = 0, xc0 = 0, yc0 = 0, raio = CIRCLE_RADIUS;
+double x,y;
+double xc = 0, yc = 0, xc0 = 0, yc0 = 0, raio = CIRCLE_RADIUS;
 int vidas = CIRCLE_INITIAL_LIFE;
+static GLuint texture = 0;
 
 double corCircR,corCircG,corCircB;
 double corVidaR,corVidaG,corVidaB;
 double corFundR,corFundG,corFundB;
 double corLabiR,corLabiG,corLabiB;
 //  SISTEMA = {Xmin,Xmax,Ymin,Ymax]
-int SRU[4] = {ORTHO_LEFT,ORTHO_RIGHT,ORTHO_BOTTOM,ORTHO_TOP};
-int SRD[4] = {0,0,0,0};
+double SRU[4] = {ORTHO_LEFT,ORTHO_RIGHT,ORTHO_BOTTOM,ORTHO_TOP};
+double SRD[4] = {0,0,0,0};
 char tituloJanela[50];
 
 void novaDificuldade(int nivel, bool resetarCores);
 void novaCor(int elemento); // CIRCLE_COLOR || MAZE_COLOR || BACK_COLOR || FLASH_COLOR
 
+
+// Method to load an image into a texture using the freeimageplus library. Returns the texture ID or dies trying.
 //======================================================================//
 void atualizarJanela(){
-	sprintf(tituloJanela, "Wastelands Maze by Ricardo e Ruan Medeiros e Jose Adolfo - Vidas: %d - Nivel: %d", vidas, GAME_LEVEL);
+	sprintf(tituloJanela, "Wastelands Maze 2.0 by Ricardo, Ruan Medeiros e Jose Adolfo - Vidas: %d - Nivel: %d", vidas, GAME_LEVEL);
 	glutSetWindowTitle(tituloJanela);
 }
 void retornarInicio() {	//	Retorna círculo para o início do labirinto
@@ -112,17 +118,18 @@ void resetMazeMesh() {
 			maze[l][c].top = 0;
 		}
 }
-bool isOnMaze(int x,int y) {
-	int xSRD = getXSRD(SRU, SRD, x);
-	int ySRD = getYSRD(SRU, SRD, y);
+bool isOnMaze(double x,double y) {
+	double xSRD = getXSRD(SRU, SRD, x);
+	double ySRD = getYSRD(SRU, SRD, y);
 
 	GLubyte *data = (GLubyte *) malloc( 3 * 1 * 1);
 	if( data ) {
 		glReadPixels(xSRD, glutGet( GLUT_WINDOW_HEIGHT ) -  ySRD, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
 		//printf("SRD( %d, %d)\n", xSRD, glutGet( GLUT_WINDOW_HEIGHT ) -ySRD);
-		//printf("MAZE - rgb( %d, %d, %d)\nRGB( %d, %d, %d)\n",
-		//		data[0], data[1], data[2],
-		//			(int) (corLabiR*255.0), (int)(corLabiG*255.0), (int)(corLabiB*255.0));
+		printf("MAZE - rgb( %d, %d, %d)\nRGB( %d, %d, %d)\n SRD ( %f, %f)\n",
+				data[0], data[1], data[2],
+					(int) (corLabiR*255.0), (int)(corLabiG*255.0), (int)(corLabiB*255.0),
+					xSRD, ySRD);
 		if (	ceil(data[0]/25.5f) == ceil(corLabiR*10) &&
 				ceil(data[1]/25.5f) == ceil(corLabiG*10) &&
 				ceil(data[2]/25.5f) == ceil(corLabiB*10)
@@ -146,9 +153,9 @@ bool isOnLimit(int x,int y)
 		return false;
 }
 bool verificarColisao(){
-	for(double theta = 0; theta <0.8;theta+=0.01) {
-		x = (int)(raio*cos(theta));
-		y = (int)(raio*sin(theta));
+	for(double theta = 0; theta < M_PI_4;theta+=0.1) {
+		x = (raio*cos(theta));
+		y = (raio*sin(theta));
 
 		//	Verifica se bateu nas paredes do labirinto
 		if (	isOnMaze(xc+(x),yc+(y)) ||
@@ -198,7 +205,8 @@ bool verificarStatus()
 	bool status; // if true -> aconteceu colisão
 
 	status = verificarColisao();
-	verificarVitoria();
+	if (!status)
+		verificarVitoria();
 
 	return status;
 }
@@ -246,17 +254,26 @@ void desenhaLabirinto(void)
 	//glutPostRedisplay();
 }
 //======================================================================//
-void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter parametros ou eu não sei como...
-{
-	double theta;
-	//glClear(GL_COLOR_BUFFER_BIT);
-
-	glColor3f(corCircR, corCircG, corCircB);
-
+void desenhaQuadrado(void){
+	glEnable(GL_TEXTURE_2D);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0.0f,0.0f);
+			glVertex2f(xc-raio,yc-raio);
+		glTexCoord2f(0.0f,1.0f);
+			glVertex2f(xc-raio,yc+raio);
+		glTexCoord2f(1.0f,1.0f);
+			glVertex2f(xc+raio,yc+raio);
+		glTexCoord2f(1.0f,0.0f);
+			glVertex2f(xc+raio,yc-raio);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+//======================================================================//
+void desenhaLuz(void) {
 	double luz=raio*5.5;
 	glColor3f(corFundR, corFundG, corFundB);
 	glBegin(GL_QUADS);
-		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+		glVertex3f(ORTHO_LEFT,ORTHO_TOP,0.0f);
 		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
 		glVertex2f(xc-luz,ORTHO_BOTTOM);
 		glVertex2f(xc-luz,ORTHO_TOP);
@@ -276,46 +293,37 @@ void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter
 		glVertex2f(ORTHO_RIGHT,yc-luz);
 		glVertex2f(ORTHO_LEFT,yc-luz);
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+//======================================================================//
+void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter parametros ou eu não sei como...
+{
+	double theta;
 
-	glPointSize(CIRCLE_POINT_SIZE); // aumenta o tamanho dos pontos
-    	glBegin(GL_POINTS);
-    		glColor3f(corCircR, corCircG, corCircB);
-    		while(raio>0) {
+	glColor3f(corCircR, corCircG, corCircB);
+	glPointSize(CIRCLE_POINT_SIZE); // Atualiza o tamanho dos pontos
+	glBegin(GL_POINTS);
+		glColor3f(corCircR, corCircG, corCircB);
+		while(raio>0) {
 
-				for(theta = 0; theta <0.8;theta+=0.01)
-				{
-					x = (int)(raio*cos(theta));
-					y = (int)(raio*sin(theta));
-					glVertex2f(xc+(x),yc+(y));
-					glVertex2f(xc+(-x),yc+(y));
-					glVertex2f(xc+(-x),yc+(-y));
-					glVertex2f(xc+(x),yc+(-y));
-					glVertex2f(xc+(y),yc+(x));
-					glVertex2f(xc+(-y),yc+(x));
-					glVertex2f(xc+(-y),yc+(-x));
-					glVertex2f(xc+(y),yc+(-x));
-				}
-				raio -= 0.1;
+			for(theta = 0; theta < M_PI_4;theta+=0.1)
+			{
+				x = (raio*cos(theta));
+				y = (raio*sin(theta));
+				glVertex2f(xc+(x),yc+(y));
+				glVertex2f(xc+(-x),yc+(y));
+				glVertex2f(xc+(-x),yc+(-y));
+				glVertex2f(xc+(x),yc+(-y));
+				glVertex2f(xc+(y),yc+(x));
+				glVertex2f(xc+(-y),yc+(x));
+				glVertex2f(xc+(-y),yc+(-x));
+				glVertex2f(xc+(y),yc+(-x));
 			}
-			raio = CIRCLE_RADIUS;
+			raio -= 0.1;
+		}
+		raio = CIRCLE_RADIUS;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    	glEnd();
+	glEnd();
     //glutSwapBuffers();
 }
 //======================================================================//
@@ -454,7 +462,7 @@ void novaCor(int elemento){
 			corVidaB = 1;
 			corFundR = 0.4;
 			corFundG = corFundB = fabs(1-corCircR);
-			corLabiR = corLabiG = corLabiB = 0.8;
+			corLabiR = corLabiG = corLabiB = 0.7;
 			break;
 		case FLASH_COLOR:
 			corCircR = fabs(1.0-corCircR);
@@ -662,14 +670,18 @@ void mySpecialFunc(int key, int x, int y){
 //======================================================================//
 void myDisplayFunc(){
 	glClear(GL_COLOR_BUFFER_BIT);
+
 	glClearColor(corFundR, corFundG, corFundB, 0.0f);
+
 	if (GAME_STATUS == GAME_WELCOME) {
 		desenhaBoasVindas();
 	}
 	else if (GAME_STATUS == GAME_START) {
 		desenhaLabirinto();
 		desenhaVidas();
-		desenhaCirculo();
+		desenhaLuz();
+		//desenhaCirculo();
+		desenhaQuadrado();
 	}
 	else if (GAME_STATUS == GAME_NEWLEVEL){
 		desenhaNovoNivel();
@@ -680,6 +692,7 @@ void myDisplayFunc(){
 	else if (GAME_STATUS == GAME_OVER){
 		desenhaFimDeJogo();
 	}
+
 	glutSwapBuffers();
 	//glutPostRedisplay();
 	//glutSwapBuffers();
@@ -717,8 +730,8 @@ void novaDificuldade(int nivel, bool resetarCores) {
 	// 	Definindo variáveis do jogo
 	//GAME_STATUS = 1;
 	//CIRCLE_RADIUS = (50.0/ceil(log(nivel)));
-	CIRCLE_RADIUS = (50.0/ceil(exp(GAME_LEVEL/CIRCLE_RADIUS_DECREASE_TIME_CONSTANT)));
-	CIRCLE_POINT_SIZE = 2.0f;
+	CIRCLE_RADIUS = (50.0/exp(GAME_LEVEL/CIRCLE_RADIUS_DECREASE_TIME_CONSTANT));
+	CIRCLE_POINT_SIZE = 1.0f;
 	CIRCLE_CENTER_SPEED = (1/4.0);
 	CIRCLE_INITIAL_LIFE = 4;
 
@@ -763,6 +776,7 @@ void novaDificuldade(int nivel, bool resetarCores) {
 // Inicializa parâmetros de rendering
 void Inicializa (void)
 {
+	FreeImage_Initialise(true);
 	novaCor(RESET_COLOR);
 	glClearColor(corFundR, corFundG, corFundB, 0.0f);
 	glMatrixMode(GL_PROJECTION);
@@ -771,6 +785,40 @@ void Inicializa (void)
 	gluOrtho2D(ORTHO_LEFT,ORTHO_RIGHT,ORTHO_BOTTOM,ORTHO_TOP);
 	glMatrixMode(GL_MODELVIEW);
 	novaDificuldade(1,true);
+
+	if (1)
+	{
+
+		FIBITMAP* bitmap = FreeImage_Load(
+			FreeImage_GetFileType("C:/Users/Ruan/Pictures/carteiro/carteiro.bmp", 0),
+			"C:/Users/Ruan/Pictures/carteiro/carteiro.bmp");
+		RGBQUAD *palette = FreeImage_GetPalette(bitmap);
+
+		//FIBITMAP *pImage = FreeImage_ConvertTo32Bits(bitmap);
+		FIBITMAP *pImage = bitmap;
+			int nWidth = FreeImage_GetWidth(pImage);
+			int nHeight = FreeImage_GetHeight(pImage);
+		unsigned char index_a = 0, index_b = 2;
+		FreeImage_SwapPaletteIndices(pImage, &index_a, &index_b);
+		//FreeImage_SwapColors(pImage, &pal[1], &pal[2], 0);
+
+		glGenTextures(1, &texture);
+
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight,
+						0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(pImage));
+		//glTexImage2D(GL_TEXTURE_2D, 0, 3, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap),
+		//    0, GL_RGB, GL_UNSIGNED_BYTE, FreeImage_ConvertTo32Bits(bitmap));
+
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+		FreeImage_Unload(bitmap);
+
+		//FreeImage_Unload(pImage);
+	}
 }
 
 // Programa principal
@@ -778,7 +826,7 @@ void Inicializa (void)
 int main(int argc, char** argv)
 {
 	printf ("Localidade corrente é: %s\n", setlocale(LC_ALL,"") );
-	//char str[50];// = "Wastelands Maze by Ricardo e Ruan Medeiros";
+	//char str[50];// = "Wastelands Maze 2.0 by Ricardo e Ruan Medeiros e Jose Adolfo";
 	glutInit(&argc,argv);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
