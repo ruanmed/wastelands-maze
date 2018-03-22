@@ -84,8 +84,10 @@ mesh **maze;
 
 double x,y;
 double xc = 0, yc = 0, xc0 = 0, yc0 = 0, raio = CIRCLE_RADIUS;
+int eixo = 0;
 int vidas = CIRCLE_INITIAL_LIFE;
 static GLuint texture = 0;
+static GLuint texturasCarteiro[4] = {0,1,2,3}; // { Estados do carteiro
 
 double corCircR,corCircG,corCircB;
 double corVidaR,corVidaG,corVidaB;
@@ -107,12 +109,13 @@ BYTE* FreeImage_GetBitsSwapRedBlue(FIBITMAP *dib) {
 
 	BYTE *pixels = (BYTE*) FreeImage_GetBits(dib);
 
-	for (unsigned int pix = 0; pix< (FreeImage_GetWidth(dib) * FreeImage_GetHeight(dib)); pix++)
+	for (unsigned int pix = 0; pix< (unsigned int)(FreeImage_GetWidth(dib) * FreeImage_GetHeight(dib)); pix++)
 	{
 		bits[pix * 4 + 0] = pixels[pix * 4 + 2];
 		bits[pix * 4 + 1] = pixels[pix * 4 + 1];
 		bits[pix * 4 + 2] = pixels[pix * 4 + 0];
 	}
+	//printf()
 	return bits;
 }
 
@@ -277,9 +280,9 @@ void desenhaQuadrado(void){
 			glVertex2f(xc-raio,yc-raio);
 		glTexCoord2f(0.0f,1.0f);
 			glVertex2f(xc-raio,yc+raio);
-		glTexCoord2f(1.0f,1.0f);
+		glTexCoord2f((eixo?-1:1)*1.0f,1.0f);
 			glVertex2f(xc+raio,yc+raio);
-		glTexCoord2f(1.0f,0.0f);
+		glTexCoord2f((eixo?-1:1)*1.0f,0.0f);
 			glVertex2f(xc+raio,yc-raio);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
@@ -654,10 +657,14 @@ void mySpecialFunc(int key, int x, int y){
 	if (GAME_STATUS == GAME_START) {
 		switch (key) {
 			case GLUT_KEY_LEFT:
-				temp = xc;
-				xc -= CIRCLE_CENTER_DISPLACEMENT;
-				if (verificarStatus())
-					xc = temp;
+				if (eixo) {
+					temp = xc;
+					xc -= CIRCLE_CENTER_DISPLACEMENT;
+					if (verificarStatus())
+						xc = temp;
+				}
+				else
+					eixo = 1;
 				break;
 			case GLUT_KEY_UP:
 				temp = yc;
@@ -666,10 +673,14 @@ void mySpecialFunc(int key, int x, int y){
 					yc = temp;
 				break;
 			case GLUT_KEY_RIGHT:
-				temp = xc;
-				xc += CIRCLE_CENTER_DISPLACEMENT;
-				if (verificarStatus())
-					xc = temp;
+				if (!eixo) {
+					temp = xc;
+					xc += CIRCLE_CENTER_DISPLACEMENT;
+					if (verificarStatus())
+						xc = temp;
+				}
+				else
+					eixo = 0;
 				break;
 			case GLUT_KEY_DOWN:
 				temp = yc;
@@ -807,9 +818,11 @@ void Inicializa (void)
 	if (1)
 	{
 
-		FIBITMAP* bitmap = FreeImage_Load(
-			FreeImage_GetFileType("images/carteiro.png", 0),
-			"images/carteiro.png");
+		FIBITMAP* bitmap = FreeImage_Load( FIF_PNG, "images/carteiro.png", PNG_DEFAULT);
+		//
+		//FIBITMAP* bitmap = FreeImage_Load(
+		//	FreeImage_GetFileType("images/carteiro.png", 0),
+		//	"images/carteiro.png");
 		//RGBQUAD *palette = FreeImage_GetPalette(bitmap);
 		//bitmap = FreeImage_ConvertTo24Bits(bitmap);
 
