@@ -100,7 +100,22 @@ void novaDificuldade(int nivel, bool resetarCores);
 void novaCor(int elemento); // CIRCLE_COLOR || MAZE_COLOR || BACK_COLOR || FLASH_COLOR
 
 
-// Method to load an image into a texture using the freeimageplus library. Returns the texture ID or dies trying.
+//======================================================================//
+// Função auxiliar para converter de BGRA para RGBA
+BYTE* FreeImage_GetBitsSwapRedBlue(FIBITMAP *dib) {
+	BYTE *bits = new BYTE[FreeImage_GetWidth(dib) * FreeImage_GetHeight(dib) * 4];
+
+	BYTE *pixels = (BYTE*) FreeImage_GetBits(dib);
+
+	for (unsigned int pix = 0; pix< (FreeImage_GetWidth(dib) * FreeImage_GetHeight(dib)); pix++)
+	{
+		bits[pix * 4 + 0] = pixels[pix * 4 + 2];
+		bits[pix * 4 + 1] = pixels[pix * 4 + 1];
+		bits[pix * 4 + 2] = pixels[pix * 4 + 0];
+	}
+	return bits;
+}
+
 //======================================================================//
 void atualizarJanela(){
 	sprintf(tituloJanela, "Wastelands Maze 2.0 by Ricardo, Ruan Medeiros e Jose Adolfo - Vidas: %d - Nivel: %d", vidas, GAME_LEVEL);
@@ -255,6 +270,7 @@ void desenhaLabirinto(void)
 }
 //======================================================================//
 void desenhaQuadrado(void){
+	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
 	glBegin(GL_QUADS);
 		glTexCoord2f(0.0f,0.0f);
@@ -786,21 +802,21 @@ void Inicializa (void)
 	glMatrixMode(GL_MODELVIEW);
 	novaDificuldade(1,true);
 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	if (1)
 	{
 
 		FIBITMAP* bitmap = FreeImage_Load(
-			FreeImage_GetFileType("C:/Users/Ruan/Pictures/carteiro/carteiro.bmp", 0),
-			"C:/Users/Ruan/Pictures/carteiro/carteiro.bmp");
-		RGBQUAD *palette = FreeImage_GetPalette(bitmap);
+			FreeImage_GetFileType("images/carteiro.png", 0),
+			"images/carteiro.png");
+		//RGBQUAD *palette = FreeImage_GetPalette(bitmap);
+		//bitmap = FreeImage_ConvertTo24Bits(bitmap);
 
-		//FIBITMAP *pImage = FreeImage_ConvertTo32Bits(bitmap);
-		FIBITMAP *pImage = bitmap;
+		FIBITMAP *pImage = FreeImage_ConvertTo32Bits(bitmap);
+		//FIBITMAP *pImage = bitmap;
 			int nWidth = FreeImage_GetWidth(pImage);
 			int nHeight = FreeImage_GetHeight(pImage);
-		unsigned char index_a = 0, index_b = 2;
-		FreeImage_SwapPaletteIndices(pImage, &index_a, &index_b);
-		//FreeImage_SwapColors(pImage, &pal[1], &pal[2], 0);
 
 		glGenTextures(1, &texture);
 
@@ -808,10 +824,11 @@ void Inicializa (void)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight,
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nWidth, nHeight,
 						0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(pImage));
 		//glTexImage2D(GL_TEXTURE_2D, 0, 3, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap),
 		//    0, GL_RGB, GL_UNSIGNED_BYTE, FreeImage_ConvertTo32Bits(bitmap));
+
 
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
