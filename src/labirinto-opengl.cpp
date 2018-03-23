@@ -48,6 +48,11 @@
 #define GAME_WIN 3
 #define GAME_NEWLEVEL 4
 
+#define CHAR_POSITION_UP_RIGHT 0
+#define CHAR_POSITION_UP_LEFT 1
+#define CHAR_POSITION_DOWN_RIGHT 2
+#define CHAR_POSITION_DOWN_LEFT 3
+
 int GAME_STATUS = 1;
 int GAME_LEVEL = 1;
 double CIRCLE_RADIUS = 5*GAME_LEVEL;
@@ -84,10 +89,10 @@ mesh **maze;
 
 double x,y;
 double xc = 0, yc = 0, xc0 = 0, yc0 = 0, raio = CIRCLE_RADIUS;
-int eixo = 0;
+int eixoH = 0, eixoV = 0;
 int vidas = CIRCLE_INITIAL_LIFE;
 static GLuint texture = 0;
-static GLuint texturasCarteiro[4] = {0,1,2,3}; // { Estados do carteiro
+static GLuint texturasCarteiro[4] = {0,1,2,3}; // Estados do carteiro {UP-RIGHT, UP-LEFT, DOWN-RIGHT, DOWN-LEFT}
 
 double corCircR,corCircG,corCircB;
 double corVidaR,corVidaG,corVidaB;
@@ -144,10 +149,12 @@ bool isOnMaze(double x,double y) {
 	if( data ) {
 		glReadPixels(xSRD, glutGet( GLUT_WINDOW_HEIGHT ) -  ySRD, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
 		//printf("SRD( %d, %d)\n", xSRD, glutGet( GLUT_WINDOW_HEIGHT ) -ySRD);
+		/*
 		printf("MAZE - rgb( %d, %d, %d)\nRGB( %d, %d, %d)\n SRD ( %f, %f)\n",
 				data[0], data[1], data[2],
 					(int) (corLabiR*255.0), (int)(corLabiG*255.0), (int)(corLabiB*255.0),
 					xSRD, ySRD);
+		//*/
 		if (	ceil(data[0]/25.5f) == ceil(corLabiR*10) &&
 				ceil(data[1]/25.5f) == ceil(corLabiG*10) &&
 				ceil(data[2]/25.5f) == ceil(corLabiB*10)
@@ -280,9 +287,9 @@ void desenhaQuadrado(void){
 			glVertex2f(xc-raio,yc-raio);
 		glTexCoord2f(0.0f,1.0f);
 			glVertex2f(xc-raio,yc+raio);
-		glTexCoord2f((eixo?-1:1)*1.0f,1.0f);
+		glTexCoord2f(1.0f,1.0f);
 			glVertex2f(xc+raio,yc+raio);
-		glTexCoord2f((eixo?-1:1)*1.0f,0.0f);
+		glTexCoord2f(1.0f,0.0f);
 			glVertex2f(xc+raio,yc-raio);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
@@ -457,6 +464,42 @@ void desenhaFimDeJogo(){
 void desenhaParabens(){
 
 }
+//==== The Textures Functions ==========================================//
+void carregarTextura(GLuint texture, const char* filename){
+
+	FIBITMAP *pImage = FreeImage_Load( FIF_PNG, filename, PNG_DEFAULT);
+		int nWidth = FreeImage_GetWidth(pImage);
+		int nHeight = FreeImage_GetHeight(pImage);
+
+	//
+
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nWidth, nHeight,
+					0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(pImage));
+	//glTexImage2D(GL_TEXTURE_2D, 0, 3, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap),
+	//    0, GL_RGB, GL_UNSIGNED_BYTE, FreeImage_ConvertTo32Bits(bitmap));
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	//FreeImage_Unload(bitmap);
+
+	FreeImage_Unload(pImage);
+}
+
+void carregarImagens(void){
+	glGenTextures(4, texturasCarteiro);
+	carregarTextura(texturasCarteiro[CHAR_POSITION_DOWN_LEFT], "images/carteiro-down-left.png");
+	carregarTextura(texturasCarteiro[CHAR_POSITION_DOWN_RIGHT], "images/carteiro-down-right.png");
+	carregarTextura(texturasCarteiro[CHAR_POSITION_UP_LEFT], "images/carteiro-up-left.png");
+	carregarTextura(texturasCarteiro[CHAR_POSITION_UP_RIGHT], "images/carteiro-up-right.png");
+
+	//{UP-RIGHT, UP-LEFT, DOWN-RIGHT, DOWN-LEFT}
+}
+
+//======================================================================//
+
 //==== The Menu Functions ==============================================//
 void novaCor(int elemento){
 	switch (elemento) {
@@ -657,36 +700,64 @@ void mySpecialFunc(int key, int x, int y){
 	if (GAME_STATUS == GAME_START) {
 		switch (key) {
 			case GLUT_KEY_LEFT:
-				if (eixo) {
+				if (eixoH == 1) {
 					temp = xc;
 					xc -= CIRCLE_CENTER_DISPLACEMENT;
 					if (verificarStatus())
 						xc = temp;
 				}
-				else
-					eixo = 1;
+				else {
+					eixoH = 1;
+					if (eixoV == 1)
+						glBindTexture(GL_TEXTURE_2D, texturasCarteiro[CHAR_POSITION_DOWN_LEFT]);
+					else
+						glBindTexture(GL_TEXTURE_2D, texturasCarteiro[CHAR_POSITION_UP_LEFT]);
+				}
 				break;
 			case GLUT_KEY_UP:
-				temp = yc;
-				yc += CIRCLE_CENTER_DISPLACEMENT;
-				if (verificarStatus())
-					yc = temp;
+				if (eixoV == 0) {
+					temp = yc;
+					yc += CIRCLE_CENTER_DISPLACEMENT;
+					if (verificarStatus())
+						yc = temp;
+				}
+				else {
+					eixoV = 0;
+					if (eixoH == 1)
+						glBindTexture(GL_TEXTURE_2D, texturasCarteiro[CHAR_POSITION_UP_LEFT]);
+					else
+						glBindTexture(GL_TEXTURE_2D, texturasCarteiro[CHAR_POSITION_UP_RIGHT]);
+				}
 				break;
 			case GLUT_KEY_RIGHT:
-				if (!eixo) {
+				if (eixoH == 0) {
 					temp = xc;
 					xc += CIRCLE_CENTER_DISPLACEMENT;
 					if (verificarStatus())
 						xc = temp;
 				}
-				else
-					eixo = 0;
+				else {
+					eixoH = 0;
+					if (eixoV == 1)
+						glBindTexture(GL_TEXTURE_2D, texturasCarteiro[CHAR_POSITION_DOWN_RIGHT]);
+					else
+						glBindTexture(GL_TEXTURE_2D, texturasCarteiro[CHAR_POSITION_UP_RIGHT]);
+				}
 				break;
 			case GLUT_KEY_DOWN:
-				temp = yc;
-				yc -= CIRCLE_CENTER_DISPLACEMENT;
-				if (verificarStatus())
-					yc = temp;
+				if (eixoV == 1) {
+					temp = yc;
+					yc -= CIRCLE_CENTER_DISPLACEMENT;
+					if (verificarStatus())
+						yc = temp;
+				}
+				else {
+					eixoV = 1;
+					if (eixoH == 1)
+						glBindTexture(GL_TEXTURE_2D, texturasCarteiro[CHAR_POSITION_DOWN_LEFT]);
+					else
+						glBindTexture(GL_TEXTURE_2D, texturasCarteiro[CHAR_POSITION_DOWN_RIGHT]);
+				}
 				break;
 			default:
 				break;
@@ -813,42 +884,10 @@ void Inicializa (void)
 	glMatrixMode(GL_MODELVIEW);
 	novaDificuldade(1,true);
 
+	// Habilita transparências nas imagens
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	if (1)
-	{
-
-		FIBITMAP* bitmap = FreeImage_Load( FIF_PNG, "images/carteiro.png", PNG_DEFAULT);
-		//
-		//FIBITMAP* bitmap = FreeImage_Load(
-		//	FreeImage_GetFileType("images/carteiro.png", 0),
-		//	"images/carteiro.png");
-		//RGBQUAD *palette = FreeImage_GetPalette(bitmap);
-		//bitmap = FreeImage_ConvertTo24Bits(bitmap);
-
-		FIBITMAP *pImage = FreeImage_ConvertTo32Bits(bitmap);
-		//FIBITMAP *pImage = bitmap;
-			int nWidth = FreeImage_GetWidth(pImage);
-			int nHeight = FreeImage_GetHeight(pImage);
-
-		glGenTextures(1, &texture);
-
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nWidth, nHeight,
-						0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(pImage));
-		//glTexImage2D(GL_TEXTURE_2D, 0, 3, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap),
-		//    0, GL_RGB, GL_UNSIGNED_BYTE, FreeImage_ConvertTo32Bits(bitmap));
-
-
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-		FreeImage_Unload(bitmap);
-
-		//FreeImage_Unload(pImage);
-	}
+	carregarImagens();
 }
 
 // Programa principal
