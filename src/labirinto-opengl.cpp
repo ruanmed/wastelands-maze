@@ -77,7 +77,8 @@ double WINDOW_HEIGTH = (ORTHO_HEIGTH*WINDOW_PROPORTION);
 double MAZE_STEP = (CIRCLE_RADIUS*6);
 
 bool MAZE_LIGHT_STATUS = true;
-double MAZE_LIGHT_SIZE = MAZE_STEP*2;
+double MAZE_LIGHT_MULT = 2.0;
+double MAZE_LIGHT_SIZE = MAZE_STEP*MAZE_LIGHT_MULT;
 
 double CIRCLE_CENTER_DISPLACEMENT = CIRCLE_CENTER_SPEED*MAZE_STEP;
 double MAZE_LINE_SIZE = CIRCLE_RADIUS*(1.0/4.0);
@@ -304,28 +305,76 @@ void desenhaQuadrado(void){
 }
 //======================================================================//
 void desenhaLuz(void) {
-	printf("RAIO ____> (%f, %f)\n",MAZE_LIGHT_SIZE,MAZE_STEP);
+	double limiteCima = yc+MAZE_LIGHT_SIZE,
+			limiteBaixo = yc-MAZE_LIGHT_SIZE,
+			limiteEsquerda = xc-MAZE_LIGHT_SIZE,
+			limiteDireita = xc+MAZE_LIGHT_SIZE;
+	unsigned int meshX, meshY;
+
+	// Determinando até aonde a luz vai para cima
+	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
+		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
+		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) + c + 1;
+		printf("RAIO 5____> (%d, %d)\n",meshX,meshY);
+		if (maze[meshX][meshY].top == 0) {
+			limiteCima = ORTHO_BOTTOM+(meshY)*MAZE_STEP;
+			break;
+		}
+	}
+	// Determinando até aonde a luz vai para baixo
+	for (int c = 0; c<=  (int)floor(MAZE_LIGHT_MULT); c++) {
+		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
+		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) - c;
+		printf("RAIO 6____> (%d, %d)\n",meshX,meshY);
+		if (maze[meshX][meshY].top == 0) {
+			limiteBaixo = ORTHO_BOTTOM+(meshY)*MAZE_STEP;
+			break;
+		}
+	}
+	// Determinando até aonde a luz vai para direita
+	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
+		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP) + c + 1;
+		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP);
+		printf("RAIO 7____> (%d, %d)\n",meshX,meshY);
+		if (maze[meshX][meshY].side == 0) {
+			limiteDireita = ORTHO_LEFT+(meshX)*MAZE_STEP;
+			break;
+		}
+	}
+	// Determinando até aonde a luz vai para esquerda
+	for (int c = 0; c <= (int)floor(MAZE_LIGHT_MULT); c++) {
+		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP) - c;
+		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP);
+		printf("RAIO 8____> (%d, %d)\n",meshX,meshY);
+		if (maze[meshX][meshY].side == 0) {
+			limiteEsquerda = ORTHO_LEFT+(meshX)*MAZE_STEP;
+			break;
+		}
+	}
+
+	printf("RAIO 2 ____> (%f, %f)\n",MAZE_LIGHT_SIZE,MAZE_STEP);
+	//
 	glColor3f(corFundR-0.1, corFundG-0.1, corFundB-0.1);
 	glBegin(GL_QUADS);
 		glVertex3f(ORTHO_LEFT,ORTHO_TOP,0.0f);
 		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
-		glVertex2f(xc-MAZE_LIGHT_SIZE,ORTHO_BOTTOM);
-		glVertex2f(xc-MAZE_LIGHT_SIZE,ORTHO_TOP);
+		glVertex2f(limiteEsquerda,ORTHO_BOTTOM);
+		glVertex2f(limiteEsquerda,ORTHO_TOP);
 
 		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
 		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
-		glVertex2f(xc+MAZE_LIGHT_SIZE,ORTHO_BOTTOM);
-		glVertex2f(xc+MAZE_LIGHT_SIZE,ORTHO_TOP);
+		glVertex2f(limiteDireita,ORTHO_BOTTOM);
+		glVertex2f(limiteDireita,ORTHO_TOP);
 
 		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
 		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
-		glVertex2f(ORTHO_RIGHT,yc+MAZE_LIGHT_SIZE);
-		glVertex2f(ORTHO_LEFT,yc+MAZE_LIGHT_SIZE);
+		glVertex2f(ORTHO_RIGHT,limiteCima);
+		glVertex2f(ORTHO_LEFT,limiteCima);
 
 		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
 		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
-		glVertex2f(ORTHO_RIGHT,yc-MAZE_LIGHT_SIZE);
-		glVertex2f(ORTHO_LEFT,yc-MAZE_LIGHT_SIZE);
+		glVertex2f(ORTHO_RIGHT,limiteBaixo);
+		glVertex2f(ORTHO_LEFT,limiteBaixo);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }
@@ -863,7 +912,7 @@ void novaDificuldade(int nivel, bool resetarCores) {
 	MESH_WIDTH_PARTS_OPENNING_PROBABILITY = 0.5/exp(GAME_LEVEL/MESH_PARTS_OPPENING_DECREASE_TIME_CONSTANT);
 	MESH_HEIGTH_PARTS_OPENNING_PROBABILITY =  0.7/exp(GAME_LEVEL/MESH_PARTS_OPPENING_DECREASE_TIME_CONSTANT);
 
-	MAZE_LIGHT_SIZE = MAZE_STEP*2.0;
+	MAZE_LIGHT_SIZE = MAZE_STEP*MAZE_LIGHT_MULT;
 	// MAZE_LIGHT_STATUS = true;
 
 	raio = CIRCLE_RADIUS;
