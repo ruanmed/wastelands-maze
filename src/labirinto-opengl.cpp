@@ -48,6 +48,9 @@
 #define GAME_WIN 3
 #define GAME_NEWLEVEL 4
 
+//#define MAZE_LIGHT_OFF 0
+//#define MAZE_LIGHT_ON 1
+
 #define CHAR_POSITION_UP_RIGHT 0
 #define CHAR_POSITION_UP_LEFT 1
 #define CHAR_POSITION_DOWN_RIGHT 2
@@ -55,6 +58,7 @@
 
 int GAME_STATUS = 1;
 int GAME_LEVEL = 1;
+
 double CIRCLE_RADIUS = 5*GAME_LEVEL;
 bool CIRCLE_FLASH = false;
 double CIRCLE_RADIUS_DECREASE_TIME_CONSTANT = 30;
@@ -71,6 +75,10 @@ double WINDOW_PROPORTION = 0.5;
 double WINDOW_WIDTH = (ORTHO_WIDTH*WINDOW_PROPORTION);
 double WINDOW_HEIGTH = (ORTHO_HEIGTH*WINDOW_PROPORTION);
 double MAZE_STEP = (CIRCLE_RADIUS*6);
+
+bool MAZE_LIGHT_STATUS = true;
+double MAZE_LIGHT_SIZE = MAZE_STEP*2;
+
 double CIRCLE_CENTER_DISPLACEMENT = CIRCLE_CENTER_SPEED*MAZE_STEP;
 double MAZE_LINE_SIZE = CIRCLE_RADIUS*(1.0/4.0);
 int MESH_WIDTH_PARTS = ORTHO_WIDTH/MAZE_STEP;
@@ -296,28 +304,28 @@ void desenhaQuadrado(void){
 }
 //======================================================================//
 void desenhaLuz(void) {
-	double luz=raio*5.5;
-	glColor3f(corFundR, corFundG, corFundB);
+	printf("RAIO ____> (%f, %f)\n",MAZE_LIGHT_SIZE,MAZE_STEP);
+	glColor3f(corFundR-0.1, corFundG-0.1, corFundB-0.1);
 	glBegin(GL_QUADS);
 		glVertex3f(ORTHO_LEFT,ORTHO_TOP,0.0f);
 		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
-		glVertex2f(xc-luz,ORTHO_BOTTOM);
-		glVertex2f(xc-luz,ORTHO_TOP);
+		glVertex2f(xc-MAZE_LIGHT_SIZE,ORTHO_BOTTOM);
+		glVertex2f(xc-MAZE_LIGHT_SIZE,ORTHO_TOP);
 
 		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
 		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
-		glVertex2f(xc+luz,ORTHO_BOTTOM);
-		glVertex2f(xc+luz,ORTHO_TOP);
+		glVertex2f(xc+MAZE_LIGHT_SIZE,ORTHO_BOTTOM);
+		glVertex2f(xc+MAZE_LIGHT_SIZE,ORTHO_TOP);
 
 		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
 		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
-		glVertex2f(ORTHO_RIGHT,yc+luz);
-		glVertex2f(ORTHO_LEFT,yc+luz);
+		glVertex2f(ORTHO_RIGHT,yc+MAZE_LIGHT_SIZE);
+		glVertex2f(ORTHO_LEFT,yc+MAZE_LIGHT_SIZE);
 
 		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
 		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
-		glVertex2f(ORTHO_RIGHT,yc-luz);
-		glVertex2f(ORTHO_LEFT,yc-luz);
+		glVertex2f(ORTHO_RIGHT,yc-MAZE_LIGHT_SIZE);
+		glVertex2f(ORTHO_LEFT,yc-MAZE_LIGHT_SIZE);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 }
@@ -385,7 +393,7 @@ void desenhaBoasVindas(){
 	//glScalef(0.2, 0.2, 0.2); // diminui o tamanho do fonte
 	//glRotatef(15, 0,0,1); // rotaciona o texto
 	glLineWidth(2); // define a espessura da linha
-	desenhaTextoStroke(GLUT_STROKE_ROMAN,"Wastelands Maze");
+	desenhaTextoStroke(GLUT_STROKE_ROMAN,"Wastelands Maze 2.0");
 	glPopMatrix();
 
 	// Posição no universo onde o texto bitmap será colocado
@@ -524,7 +532,7 @@ void novaCor(int elemento){
 			corVidaB = 1;
 			corFundR = 0.4;
 			corFundG = corFundB = fabs(1-corCircR);
-			corLabiR = corLabiG = corLabiB = 0.7;
+			corLabiR = corLabiG = corLabiB = 0.01;
 			break;
 		case FLASH_COLOR:
 			corCircR = fabs(1.0-corCircR);
@@ -689,6 +697,9 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 				GAME_STATUS = GAME_WELCOME;
 			}
 			break;
+		case 'l':
+			MAZE_LIGHT_STATUS = (!MAZE_LIGHT_STATUS);
+			break;
 		default:
 			break;
 	}
@@ -777,7 +788,8 @@ void myDisplayFunc(){
 	else if (GAME_STATUS == GAME_START) {
 		desenhaLabirinto();
 		desenhaVidas();
-		desenhaLuz();
+		if (MAZE_LIGHT_STATUS == true)
+			desenhaLuz();
 		//desenhaCirculo();
 		desenhaQuadrado();
 	}
@@ -851,7 +863,9 @@ void novaDificuldade(int nivel, bool resetarCores) {
 	MESH_WIDTH_PARTS_OPENNING_PROBABILITY = 0.5/exp(GAME_LEVEL/MESH_PARTS_OPPENING_DECREASE_TIME_CONSTANT);
 	MESH_HEIGTH_PARTS_OPENNING_PROBABILITY =  0.7/exp(GAME_LEVEL/MESH_PARTS_OPPENING_DECREASE_TIME_CONSTANT);
 
-	//
+	MAZE_LIGHT_SIZE = MAZE_STEP*2.0;
+	// MAZE_LIGHT_STATUS = true;
+
 	raio = CIRCLE_RADIUS;
 	vidas = CIRCLE_INITIAL_LIFE;
 	if (resetarCores)
@@ -902,7 +916,7 @@ int main(int argc, char** argv)
  	glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGTH);
 	glutInitWindowPosition(10,10);
 
-	sprintf(tituloJanela, "Wastelands Maze by Ricardo e Ruan Medeiros - Vidas: %d", vidas);
+	sprintf(tituloJanela, "Wastelands Maze 2.0 by Ricardo e Ruan Medeiros - Vidas: %d", vidas);
 	glutCreateWindow(tituloJanela);
 
 	Inicializa();
