@@ -346,23 +346,61 @@ void desenhaQuadrado(void){
 	glDisable(GL_TEXTURE_2D);
 }
 //======================================================================//
-void desenhaLuz(void) {
+void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdade desenha a área sem luz
 	double limiteCima = yc+MAZE_LIGHT_SIZE,
 			limiteBaixo = yc-MAZE_LIGHT_SIZE,
 			limiteEsquerda = xc-MAZE_LIGHT_SIZE,
 			limiteDireita = xc+MAZE_LIGHT_SIZE;
 	int meshX = 1, meshY = 1;
 
+	//	Definindo a cor da área sem luz
+	glColor3f(corFundR-0.1, corFundG-0.1, corFundB-0.1);
+
 	// Determinando até aonde a luz vai para cima
 	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) + c + 1;
 		printf("RAIO 5____> (%d, %d)\n",meshX,meshY);
-		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS) // Verifica se não passou dos limites
 			break;
-		else if (maze[meshX][meshY].top == 0) {
-			limiteCima = ORTHO_BOTTOM+(meshY)*MAZE_STEP;
-			break;
+		else {
+			if (maze[meshX][meshY].top == 0) {	//	Verifica se existe uma parede acima para definir o limite
+				glBegin(GL_QUADS);
+					glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+					glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
+					glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+					glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+				glEnd();
+			}
+
+			int meshXD = meshX+1;
+			// Se não houver uma parede acima então tem que ser verificadas as paredes à esquerda e à direita
+			for (int l = 0;meshX >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
+				if (maze[meshX][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+					glBegin(GL_QUADS);
+						glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_TOP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+					glEnd();
+					break;
+				}
+				meshX--;
+			}
+			/*
+			for (int l = 0;meshXD < MESH_WIDTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
+				if (maze[meshXD][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+					glBegin(GL_QUADS);
+						glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+						glVertex2f(ORTHO_LEFT+(meshXD)*MAZE_STEP,ORTHO_TOP);
+						glVertex2f(ORTHO_LEFT+(meshXD)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+					glEnd();
+					break;
+				}
+				meshXD++;
+			}
+			*/
 		}
 	}
 	// Determinando até aonde a luz vai para baixo
@@ -372,9 +410,45 @@ void desenhaLuz(void) {
 		printf("RAIO 6____> (%d, %d)\n",meshX,meshY);
 		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
 			break;
-		else if (maze[meshX][meshY].top == 0) {
-			limiteBaixo = ORTHO_BOTTOM+(meshY)*MAZE_STEP;
-			break;
+		else {	// Se não houver uma parede abaixo então tem que ser verificada a parede logo ao lado direito desta
+			if (maze[meshX][meshY].top == 0) {
+				glBegin(GL_QUADS);
+					glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
+					glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
+					glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+					glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+				glEnd();
+			}
+
+			int meshXD = meshX-1;
+			meshX++;
+			for (int l = 0; meshX < MESH_WIDTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
+				printf("RAIO 66666666666____> (%d, %d)\n",meshX,meshY);
+				if (maze[meshX][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+					glBegin(GL_QUADS);
+						glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+					glEnd();
+					break;
+				}
+				meshX++;
+			}
+			/*
+			for (int l = 0;meshXD >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
+				if (maze[meshXD][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+					glBegin(GL_QUADS);
+						glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
+						glVertex2f(ORTHO_LEFT+(meshXD)*MAZE_STEP,ORTHO_BOTTOM);
+						glVertex2f(ORTHO_LEFT+(meshXD)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+					glEnd();
+					break;
+				}
+				meshXD--;
+			}
+			*/
 		}
 	}
 	// Determinando até aonde a luz vai para direita
@@ -384,9 +458,45 @@ void desenhaLuz(void) {
 		printf("RAIO 7____> (%d, %d)\n",meshX,meshY);
 		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
 			break;
-		else if (maze[meshX][meshY].side == 0) {
-			limiteDireita = ORTHO_LEFT+(meshX)*MAZE_STEP;
-			break;
+		else {
+			if (maze[meshX][meshY].side == 0) {	//	Limite pela direita
+				glBegin(GL_QUADS);
+					glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
+					glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
+					glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM);
+					glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_TOP);
+				glEnd();
+			}
+
+			// Se não houver uma parede à direita então tem que ser verificada a parede logo ao lado direito desta
+			int meshYE = meshY-1;
+			meshY++;
+			for (int l = 0; meshY < MESH_HEIGTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
+				if (maze[meshX][meshY].top == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+					glBegin(GL_QUADS);
+						glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
+						glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_TOP);
+					glEnd();
+					break;
+				}
+				meshY++;
+			}
+			/*
+			for (int l = 0; meshYE >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
+				if (maze[meshX][meshYE].top == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+					glBegin(GL_QUADS);
+						glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
+						glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM+(meshYE)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshYE)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_TOP);
+					glEnd();
+					break;
+				}
+				meshYE--;
+			}
+			*/
 		}
 	}
 	// Determinando até aonde a luz vai para esquerda
@@ -396,9 +506,45 @@ void desenhaLuz(void) {
 		printf("RAIO 8____> (%d, %d)\n",meshX,meshY);
 		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
 			break;
-		else if (maze[meshX][meshY].side == 0) {
-			limiteEsquerda = ORTHO_LEFT+(meshX)*MAZE_STEP;
-			break;
+		else {
+			if (maze[meshX][meshY].side == 0) {
+				glBegin(GL_QUADS);
+					glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+					glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
+					glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM);
+					glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_TOP);
+				glEnd();
+			}
+			int meshYE = meshY+1;
+			// Se não houver uma parede à direita então tem que ser verificada a parede logo ao lado direito desta
+			for (int l = 0; meshY >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
+				if (maze[meshX][meshY].top == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+					//glColor3f(corFundR-0.1, corFundG-0.1, 0.2);
+					glBegin(GL_QUADS);
+						glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
+						glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM);
+					glEnd();
+					break;
+				}
+				meshY--;
+			}
+			/*
+			for (int l = 0; meshYE < MESH_HEIGTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
+				if (maze[meshX][meshYE].top == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+					glColor3f(corFundR-0.1, corFundG-0.1, 0.8);
+					glBegin(GL_QUADS);
+						glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
+						glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM+(meshYE)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshYE)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM);
+					glEnd();
+					break;
+				}
+				meshYE++;
+			}
+			*/
 		}
 	}
 
@@ -406,7 +552,7 @@ void desenhaLuz(void) {
 	//
 	glColor3f(corFundR-0.1, corFundG-0.1, corFundB-0.1);
 	glBegin(GL_QUADS);
-		glVertex3f(ORTHO_LEFT,ORTHO_TOP,0.0f);
+		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
 		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
 		glVertex2f(limiteEsquerda,ORTHO_BOTTOM);
 		glVertex2f(limiteEsquerda,ORTHO_TOP);
@@ -426,7 +572,6 @@ void desenhaLuz(void) {
 		glVertex2f(ORTHO_RIGHT,limiteBaixo);
 		glVertex2f(ORTHO_LEFT,limiteBaixo);
 	glEnd();
-	glDisable(GL_TEXTURE_2D);
 }
 //======================================================================//
 void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter parametros ou eu não sei como...
