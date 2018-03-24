@@ -35,6 +35,7 @@
 #ifdef _WIN32
     #include <windows.h>
 #endif
+#define PI 3.14159265
 #define RESET_COLOR 0
 #define CIRCLE_COLOR 1
 #define MAZE_COLOR 2
@@ -572,6 +573,43 @@ void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdad
 		glVertex2f(ORTHO_RIGHT,limiteBaixo);
 		glVertex2f(ORTHO_LEFT,limiteBaixo);
 	glEnd();
+}
+void getMeshGridCenter(int InLMesh,int InCMesh,double &OutXc,double &OutYc)//recebe a linha e a coluna do mesh e retorna seu ponto central no ortho 2d
+{
+	(*OutXc) = (InCMesh+0.5)*(MAZE_STEP)+ORTHO_LEFT;
+	(*OutYc) = (InLMesh+0.5)*(MAZE_STEP)+ORTHO_BOTTOM;
+}
+void getCurrentPositionMesh(int &OutXchar,int &OutYchar)//retorna o mesh atual do personagem
+{
+	OutXchar = floor(x/MAZE_STEP);
+	OutYchar = floor(y/MAZE_STEP);
+}
+void getCurrentPositionMeshGridCenter(double &OutXc,double &OutYc)// retorna o centro do mesh atual do personagem
+{
+	int xchar,ychar;
+	getCurrentPositionMesh(xchar,ychar);
+	getMeshGridCenter(xchar,ychar,OutXc,OutYc);
+}
+double getLineAnguleRADS(double x1,double y1,double x2,double y2)
+{
+	return atan((y2-y1)/(x2-x1));
+}
+double getLineAnguleGRAUS(double x1,double y1,double x2,double y2)
+{
+	return getLineAnguleRADS(x1,y1,x2,y2)*(180/PI);
+}
+void desenhaLuz2(void)//Essa função também é uma mentira
+{
+	double limiteCima = yc+MAZE_LIGHT_SIZE,
+				limiteBaixo = yc-MAZE_LIGHT_SIZE,
+				limiteEsquerda = xc-MAZE_LIGHT_SIZE,
+				limiteDireita = xc+MAZE_LIGHT_SIZE;
+	int meshX = 1, meshY = 1;
+
+	//	Definindo a cor da área sem luz
+	glColor3f(corFundR-0.1, corFundG-0.1, corFundB-0.1);
+
+
 }
 //======================================================================//
 void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter parametros ou eu não sei como...
