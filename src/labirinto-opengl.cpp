@@ -56,10 +56,14 @@
 #define CHAR_POSITION_DOWN_RIGHT 2
 #define CHAR_POSITION_DOWN_LEFT 3
 
+#define OBJECT_SQUARE 1
+#define OBJECT_CIRCLE 0
+
 int GAME_STATUS = 1;
 int GAME_LEVEL = 1;
 
-double CIRCLE_RADIUS = 5*GAME_LEVEL;
+int OBJECT_CLASS = OBJECT_SQUARE;
+int CIRCLE_RADIUS = 5*GAME_LEVEL;
 bool CIRCLE_FLASH = false;
 double CIRCLE_RADIUS_DECREASE_TIME_CONSTANT = 30;
 double CIRCLE_POINT_SIZE = 1.0f;
@@ -74,7 +78,7 @@ int ORTHO_TOP = (ORTHO_HEIGTH/2);
 double WINDOW_PROPORTION = 0.5;
 double WINDOW_WIDTH = (ORTHO_WIDTH*WINDOW_PROPORTION);
 double WINDOW_HEIGTH = (ORTHO_HEIGTH*WINDOW_PROPORTION);
-double MAZE_STEP = (CIRCLE_RADIUS*6);
+int MAZE_STEP = (CIRCLE_RADIUS*6);
 
 bool MAZE_LIGHT_STATUS = true;
 double MAZE_LIGHT_MULT = 2.0;
@@ -143,40 +147,45 @@ void retornarInicio() {	//	Retorna círculo para o início do labirinto
 	yc = yc0;
 }
 //======================================================================//
-void resetMazeMesh() {
+void resetMazeMesh(){
 	for(int l=0;l<MESH_WIDTH_PARTS;l++)
 		for(int c=0;c<MESH_HEIGTH_PARTS;c++){
 			maze[l][c].side = 0;
 			maze[l][c].top = 0;
 		}
 }
-bool isOnMaze(double x,double y) {
-	double xSRD = getXSRD(SRU, SRD, x);
-	double ySRD = getYSRD(SRU, SRD, y);
+bool isOnMaze(double x,double y){
+	if (OBJECT_CLASS == OBJECT_CIRCLE) {
+		double xSRD = getXSRD(SRU, SRD, x);
+		double ySRD = getYSRD(SRU, SRD, y);
 
-	GLubyte *data = (GLubyte *) malloc( 3 * 1 * 1);
-	if( data ) {
-		glReadPixels(xSRD, glutGet( GLUT_WINDOW_HEIGHT ) -  ySRD, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
-		//printf("SRD( %d, %d)\n", xSRD, glutGet( GLUT_WINDOW_HEIGHT ) -ySRD);
-		/*
-		printf("MAZE - rgb( %d, %d, %d)\nRGB( %d, %d, %d)\n SRD ( %f, %f)\n",
-				data[0], data[1], data[2],
-					(int) (corLabiR*255.0), (int)(corLabiG*255.0), (int)(corLabiB*255.0),
-					xSRD, ySRD);
-		//*/
-		if (	ceil(data[0]/25.5f) == ceil(corLabiR*10) &&
-				ceil(data[1]/25.5f) == ceil(corLabiG*10) &&
-				ceil(data[2]/25.5f) == ceil(corLabiB*10)
-				){
+		GLubyte *data = (GLubyte *) malloc( 3 * 1 * 1);
+		if( data ) {
+			glReadPixels(xSRD, glutGet( GLUT_WINDOW_HEIGHT ) -  ySRD, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
+			//printf("SRD( %d, %d)\n", xSRD, glutGet( GLUT_WINDOW_HEIGHT ) -ySRD);
+			/*
+			printf("MAZE - rgb( %d, %d, %d)\nRGB( %d, %d, %d)\n SRD ( %f, %f)\n",
+					data[0], data[1], data[2],
+						(int) (corLabiR*255.0), (int)(corLabiG*255.0), (int)(corLabiB*255.0),
+						xSRD, ySRD);
+			//*/
+			if (	ceil(data[0]/25.5f) == ceil(corLabiR*10) &&
+					ceil(data[1]/25.5f) == ceil(corLabiG*10) &&
+					ceil(data[2]/25.5f) == ceil(corLabiB*10)
+					){
 
-			return true;
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 		else {
+			printf("ERROR - Can't allocated memory.\n");
 			return false;
 		}
 	}
-	else {
-		printf("ERROR - Can't allocated memory.\n");
+	else if (OBJECT_CLASS == OBJECT_SQUARE){
 		return false;
 	}
 }
@@ -186,7 +195,7 @@ bool isOnLimit(int x,int y)
 	else
 		return false;
 }
-bool verificarColisao(){
+bool verificarColisaoCirculo() {
 	for(double theta = 0; theta < M_PI_4;theta+=0.1) {
 		x = (raio*cos(theta));
 		y = (raio*sin(theta));
@@ -209,6 +218,39 @@ bool verificarColisao(){
 			return false;
 	}
 	//raio = CIRCLE_RADIUS;
+}
+bool verificarColisaoQuadrado(){	//	Verifica se vai haver colisão detectando se os segmentos de reta do quadrado
+									//	Passam por alguma parede do labirinto
+	//printf("\n_____------->\nEHNTOREUORUIOA\n");
+	int meshX1 = 1, meshY1 = 1, meshX2 = 1, meshY2 = 1;
+	meshX1 = floor((xc-raio-ORTHO_LEFT)/MAZE_STEP);
+	meshX2 = floor((xc+raio-ORTHO_LEFT)/MAZE_STEP);
+	meshY1 = floor((yc-raio-ORTHO_BOTTOM)/MAZE_STEP);
+	meshY2 = floor((yc+raio-ORTHO_BOTTOM)/MAZE_STEP);
+	//printf("RAIO MESHSHSHSHSH____1> (%d, %d)\n",meshX1,meshY1);
+	//printf("RAIO MESHSHSHSHSH____2> (%d, %d)\n",meshX2,meshY2);
+	if (meshX2 < MESH_WIDTH_PARTS && meshY2 < MESH_HEIGTH_PARTS){
+		if (meshY1 >= 0 && meshX2-meshX1 > 0){	//	Verifica se a parte de cima ou de baixo do quadrado
+			if (maze[meshX2][meshY1].side == 0)	//	está colidindo com alguma parede vertical do labirinto
+				return true;
+			if (maze[meshX2][meshY2].side == 0)
+				return true;
+		}
+		if (meshX1 >= 0 && meshY2-meshY1 > 0) {	//	Verifica se os lados do quadrado estão colidindo
+			if (maze[meshX1][meshY2].top == 0)	//	com alguma parede horizontal do labirinto
+				return true;
+			if (maze[meshX2][meshY2].top == 0)
+				return true;
+		}
+	}
+	return false;
+}
+bool verificarColisao(){
+	if (OBJECT_CLASS == OBJECT_CIRCLE)
+		return verificarColisaoCirculo();
+	else if (OBJECT_CLASS == OBJECT_SQUARE)
+		return verificarColisaoQuadrado();
+
 }
 void verificarVitoria()
 {
@@ -309,24 +351,28 @@ void desenhaLuz(void) {
 			limiteBaixo = yc-MAZE_LIGHT_SIZE,
 			limiteEsquerda = xc-MAZE_LIGHT_SIZE,
 			limiteDireita = xc+MAZE_LIGHT_SIZE;
-	unsigned int meshX, meshY;
+	int meshX = 1, meshY = 1;
 
 	// Determinando até aonde a luz vai para cima
 	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) + c + 1;
 		printf("RAIO 5____> (%d, %d)\n",meshX,meshY);
-		if (maze[meshX][meshY].top == 0) {
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
+			break;
+		else if (maze[meshX][meshY].top == 0) {
 			limiteCima = ORTHO_BOTTOM+(meshY)*MAZE_STEP;
 			break;
 		}
 	}
 	// Determinando até aonde a luz vai para baixo
-	for (int c = 0; c<=  (int)floor(MAZE_LIGHT_MULT); c++) {
+	for (int c = 0; c <  (int)floor(MAZE_LIGHT_MULT); c++) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) - c;
 		printf("RAIO 6____> (%d, %d)\n",meshX,meshY);
-		if (maze[meshX][meshY].top == 0) {
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
+			break;
+		else if (maze[meshX][meshY].top == 0) {
 			limiteBaixo = ORTHO_BOTTOM+(meshY)*MAZE_STEP;
 			break;
 		}
@@ -336,17 +382,21 @@ void desenhaLuz(void) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP) + c + 1;
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP);
 		printf("RAIO 7____> (%d, %d)\n",meshX,meshY);
-		if (maze[meshX][meshY].side == 0) {
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
+			break;
+		else if (maze[meshX][meshY].side == 0) {
 			limiteDireita = ORTHO_LEFT+(meshX)*MAZE_STEP;
 			break;
 		}
 	}
 	// Determinando até aonde a luz vai para esquerda
-	for (int c = 0; c <= (int)floor(MAZE_LIGHT_MULT); c++) {
+	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP) - c;
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP);
 		printf("RAIO 8____> (%d, %d)\n",meshX,meshY);
-		if (maze[meshX][meshY].side == 0) {
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
+			break;
+		else if (maze[meshX][meshY].side == 0) {
 			limiteEsquerda = ORTHO_LEFT+(meshX)*MAZE_STEP;
 			break;
 		}
@@ -839,8 +889,10 @@ void myDisplayFunc(){
 		desenhaVidas();
 		if (MAZE_LIGHT_STATUS == true)
 			desenhaLuz();
-		//desenhaCirculo();
-		desenhaQuadrado();
+		if (OBJECT_CLASS == OBJECT_CIRCLE)
+			desenhaCirculo();
+		else if (OBJECT_CLASS == OBJECT_SQUARE)
+			desenhaQuadrado();
 	}
 	else if (GAME_STATUS == GAME_NEWLEVEL){
 		desenhaNovoNivel();
@@ -889,7 +941,7 @@ void novaDificuldade(int nivel, bool resetarCores) {
 	// 	Definindo variáveis do jogo
 	//GAME_STATUS = 1;
 	//CIRCLE_RADIUS = (50.0/ceil(log(nivel)));
-	CIRCLE_RADIUS = (50.0/exp(GAME_LEVEL/CIRCLE_RADIUS_DECREASE_TIME_CONSTANT));
+	CIRCLE_RADIUS = ceil(50.0/exp(GAME_LEVEL/CIRCLE_RADIUS_DECREASE_TIME_CONSTANT));
 	CIRCLE_POINT_SIZE = 1.0f;
 	CIRCLE_CENTER_SPEED = (1/4.0);
 	CIRCLE_INITIAL_LIFE = 4;
