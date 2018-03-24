@@ -325,12 +325,177 @@ void desenhaLabirinto(void)
 						glVertex2f(ORTHO_LEFT+l*MAZE_STEP,ORTHO_BOTTOM+(c+1)*MAZE_STEP);
 						//printf("%d %d\n", c*MAZE_STEP, l*MAZE_STEP);
 					}
-
 				}
 
 	glEnd();
 	//glutSwapBuffers();
 	//glutPostRedisplay();
+}
+//======================================================================//
+void desenhaLabirintoLuz(void){
+	//	Definindo a cor do labirinto iluminado
+	glColor3f(corLabiR, corLabiG, corLabiB);
+
+	glLineWidth(MAZE_LINE_SIZE);
+	glBegin(GL_LINES);
+
+	int meshX = 1, meshY = 1;
+
+	// Determinando até aonde a luz vai para cima
+	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
+		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
+		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) + c + 1;
+		//printf("RAIO 5____> (%d, %d)\n",meshX,meshY);
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS) // Verifica se não passou dos limites
+			break;
+		else {
+			if (maze[meshX][meshY].top == 0) {	//	Verifica se existe uma parede acima para definir o limite
+				glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+				glVertex2f(ORTHO_LEFT+(meshX+1)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+				break;
+			}
+			else {
+				int meshXD = meshX+1;
+				// Se não houver uma parede acima então tem que ser verificadas as paredes à esquerda e à direita
+				for (int l = 0;meshX >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
+					if (maze[meshX][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
+						break;
+					}
+					meshX--;
+				}
+
+				for (int l = 0;meshXD < MESH_WIDTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
+					if (maze[meshXD][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+						glVertex2f(ORTHO_LEFT+(meshXD)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshXD)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
+						break;
+					}
+					meshXD++;
+				}
+			}
+		}
+	}
+
+	printf("->>>> COISAS> (%d, %d)\n",MESH_WIDTH_PARTS,MESH_HEIGTH_PARTS);
+	// Determinando até aonde a luz vai para baixo
+	for (int c = 0; c <  (int)floor(MAZE_LIGHT_MULT); c++) {
+		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
+		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) - c;
+		printf("RAIO 6____> (%d, %d)\n",meshX,meshY);
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
+			break;
+		else {	// Se não houver uma parede abaixo então tem que ser verificada a parede logo ao lado direito desta
+			if (maze[meshX][meshY].top == 0) {
+				glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+				glVertex2f(ORTHO_LEFT+(meshX+1)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+				break;
+			}
+			else {
+				meshY--;
+				int meshXD = meshX;
+				meshX++;
+				for (int l = 0; meshX < MESH_WIDTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
+					printf("RAIO 66666666666____> (%d, %d)\n",meshX,meshY);
+					if (maze[meshX][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
+						break;
+					}
+					meshX++;
+				}
+				for (int l = 0;meshXD >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
+					if (maze[meshXD][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+						glVertex2f(ORTHO_LEFT+(meshXD)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshXD)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
+						break;
+					}
+					meshXD--;
+				}
+			}
+		}
+	}
+	// Determinando até aonde a luz vai para direita
+
+	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
+		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP) +c + 1;
+		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP);
+		//meshX++;
+		//printf("RAIO 7____> (%d, %d)\n",meshX,meshY);
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
+			break;
+		else {
+			if (maze[meshX][meshY].side == 0) {	//	Limite pela direita
+				glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+				glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
+				break;
+			}
+			else {
+				// Se não houver uma parede à direita então tem que ser verificada a parede logo ao lado direito desta
+				int meshYE = meshY;
+				meshY++;
+				for (int l = 0; meshY < MESH_HEIGTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
+					if (maze[meshX][meshY].top == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX+1)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						break;
+					}
+					meshY++;
+				}
+				for (int l = 0; meshYE >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
+					if (maze[meshX][meshYE].top == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshYE)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX+1)*MAZE_STEP,ORTHO_BOTTOM+(meshYE)*MAZE_STEP);
+						break;
+					}
+					meshYE--;
+				}
+			}
+		}
+	}
+	// Determinando até aonde a luz vai para esquerda
+	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
+		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP) - c;
+		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP);
+		printf("RAIO 8____> (%d, %d)\n",meshX,meshY);
+		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
+			break;
+		else {
+			if (maze[meshX][meshY].side == 0) {
+				glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+				glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
+				break;
+			}
+			else {
+				meshX--;
+				if (meshX < 0)
+					break;
+				int meshYE = meshY+1;
+				// Se não houver uma parede à direita então tem que ser verificada a parede logo ao lado direito desta
+				for (int l = 0; meshY >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
+					if (maze[meshX][meshY].top == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+						glColor3f(corFundR-0.1, corFundG-0.1, 0.2);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX+1)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
+						break;
+					}
+					meshY--;
+				}
+				for (int l = 0; meshYE < MESH_HEIGTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
+					if (maze[meshX][meshYE].top == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
+						glColor3f(corFundR-0.1, corFundG-0.1, 0.8);
+						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshYE)*MAZE_STEP);
+						glVertex2f(ORTHO_LEFT+(meshX+1)*MAZE_STEP,ORTHO_BOTTOM+(meshYE)*MAZE_STEP);
+						break;
+					}
+					meshYE++;
+				}
+				glColor3f(corLabiR, corLabiG, corLabiB);
+			}
+		}
+	}
+	glEnd();
 }
 //======================================================================//
 void desenhaQuadrado(void){
@@ -349,11 +514,36 @@ void desenhaQuadrado(void){
 	glDisable(GL_TEXTURE_2D);
 }
 //======================================================================//
-void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdade desenha a área sem luz
+void desenhaLuzQuadrada(){
+	glColor3f(0.0, 0.0, 0.0);
 	double limiteCima = yc+MAZE_LIGHT_SIZE,
 			limiteBaixo = yc-MAZE_LIGHT_SIZE,
 			limiteEsquerda = xc-MAZE_LIGHT_SIZE,
 			limiteDireita = xc+MAZE_LIGHT_SIZE;
+	glBegin(GL_QUADS);
+		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
+		glVertex2f(limiteEsquerda,ORTHO_BOTTOM);
+		glVertex2f(limiteEsquerda,ORTHO_TOP);
+
+		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
+		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
+		glVertex2f(limiteDireita,ORTHO_BOTTOM);
+		glVertex2f(limiteDireita,ORTHO_TOP);
+
+		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
+		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
+		glVertex2f(ORTHO_RIGHT,limiteCima);
+		glVertex2f(ORTHO_LEFT,limiteCima);
+
+		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
+		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
+		glVertex2f(ORTHO_RIGHT,limiteBaixo);
+		glVertex2f(ORTHO_LEFT,limiteBaixo);
+	glEnd();
+}
+
+void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdade desenha a área sem luz
 	int meshX = 1, meshY = 1;
 
 	//	Definindo a cor da área sem luz
@@ -558,30 +748,8 @@ void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdad
 		}
 	}
 
-	//printf("RAIO 2 ____> (%f, %f)\n",MAZE_LIGHT_SIZE,MAZE_STEP);
-	//
-	//glColor3f(corFundR-0.1, corFundG-0.1, corFundB-0.1);
-	glBegin(GL_QUADS);
-		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
-		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
-		glVertex2f(limiteEsquerda,ORTHO_BOTTOM);
-		glVertex2f(limiteEsquerda,ORTHO_TOP);
-
-		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
-		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
-		glVertex2f(limiteDireita,ORTHO_BOTTOM);
-		glVertex2f(limiteDireita,ORTHO_TOP);
-
-		glVertex2f(ORTHO_LEFT,ORTHO_TOP);
-		glVertex2f(ORTHO_RIGHT,ORTHO_TOP);
-		glVertex2f(ORTHO_RIGHT,limiteCima);
-		glVertex2f(ORTHO_LEFT,limiteCima);
-
-		glVertex2f(ORTHO_LEFT,ORTHO_BOTTOM);
-		glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
-		glVertex2f(ORTHO_RIGHT,limiteBaixo);
-		glVertex2f(ORTHO_LEFT,limiteBaixo);
-	glEnd();
+	desenhaLabirintoLuz();
+	desenhaLuzQuadrada();
 }
 void getMeshGridCenter(int InLMesh,int InCMesh,double &OutXc,double &OutYc)//recebe a linha e a coluna do mesh e retorna seu ponto central no ortho 2d
 {
@@ -617,8 +785,6 @@ void desenhaLuz2(void)//Essa função também é uma mentira
 
 	//	Definindo a cor da área sem luz
 	glColor3f(corFundR-0.1, corFundG-0.1, corFundB-0.1);
-
-
 }
 //======================================================================//
 void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter parametros ou eu não sei como...
