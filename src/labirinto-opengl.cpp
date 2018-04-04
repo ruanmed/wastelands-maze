@@ -43,6 +43,7 @@
 #define FLASH_COLOR 4
 
 #define GLUT_SPACEBAR_KEY 32
+#define GAME_TITLE "Wastelands Maze 2.0"
 #define GAME_OVER 0
 #define GAME_WELCOME 1
 #define GAME_START 2
@@ -65,7 +66,7 @@ int GAME_LEVEL = 1;
 
 int OBJECT_CLASS = OBJECT_SQUARE;
 int CIRCLE_RADIUS = 5*GAME_LEVEL;
-bool CIRCLE_FLASH = false;
+bool CIRCLE_FLASH = true;
 double CIRCLE_RADIUS_DECREASE_TIME_CONSTANT = 30;
 double CIRCLE_POINT_SIZE = 1.0f;
 double CIRCLE_CENTER_SPEED = (1/4.0);
@@ -600,12 +601,12 @@ void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdad
 			}
 		}
 	}
-	printf("->>>> COISAS> (%d, %d)\n",MESH_WIDTH_PARTS,MESH_HEIGTH_PARTS);
+	//printf("->>>> COISAS> (%d, %d)\n",MESH_WIDTH_PARTS,MESH_HEIGTH_PARTS);
 	// Determinando até aonde a luz vai para baixo
 	for (int c = 0; c <  (int)floor(MAZE_LIGHT_MULT); c++) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) - c;
-		printf("RAIO 6____> (%d, %d)\n",meshX,meshY);
+		//printf("RAIO 6____> (%d, %d)\n",meshX,meshY);
 		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
 			break;
 		else {	// Se não houver uma parede abaixo então tem que ser verificada a parede logo ao lado direito desta
@@ -622,7 +623,7 @@ void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdad
 				int meshXD = meshX;
 				meshX++;
 				for (int l = 0; meshX < MESH_WIDTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
-					printf("RAIO 66666666666____> (%d, %d)\n",meshX,meshY);
+					//printf("RAIO 66666666666____> (%d, %d)\n",meshX,meshY);
 					if (maze[meshX][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
 						glBegin(GL_QUADS);
 							glVertex2f(ORTHO_RIGHT,ORTHO_BOTTOM);
@@ -702,7 +703,7 @@ void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdad
 	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP) - c;
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP);
-		printf("RAIO 8____> (%d, %d)\n",meshX,meshY);
+		//printf("RAIO 8____> (%d, %d)\n",meshX,meshY);
 		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
 			break;
 		else {
@@ -838,7 +839,7 @@ void desenhaVidas(){
 		GAME_STATUS = GAME_OVER;
 	}
 }
-void desenhaTexto(void *font, const char *string) {	// Exibe caractere a caractere
+void desenhaTexto(const char *string) {	// Exibe caractere a caractere
 	while(*string)
 		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,*string++);
 }
@@ -847,15 +848,13 @@ void desenhaTextoStroke(void *font, char *string) {	// Exibe caractere a caracte
 		glutStrokeCharacter(GLUT_STROKE_ROMAN,*string++);
 }
 void desenhaBoasVindas(){
-	string print;
 	// Posiciona o texto stroke usando transformações geométricas
 	glPushMatrix();
-	glTranslatef(ORTHO_LEFT*0.5,ORTHO_BOTTOM*0.2-100,0);
+	glTranslatef(ORTHO_LEFT*0.75,ORTHO_BOTTOM*0.3-100,0);
 	//glScalef(0.2, 0.2, 0.2); // diminui o tamanho do fonte
 	//glRotatef(15, 0,0,1); // rotaciona o texto
 	glLineWidth(2); // define a espessura da linha
-	print = "Wastelands Maze 2.0";
-	desenhaTextoStroke(GLUT_STROKE_ROMAN,(char *) print.c_str());
+	desenhaTextoStroke(GLUT_STROKE_ROMAN,GAME_TITLE);
 	glPopMatrix();
 
 	// Posição no universo onde o texto bitmap será colocado
@@ -864,48 +863,50 @@ void desenhaBoasVindas(){
 	//glRotatef(15, 0,0,1); // rotaciona o texto
 	int textoX =  ORTHO_LEFT*0.8, textoY = ORTHO_TOP*0.8;
 	glRasterPos2f(textoX,textoY);
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"Mova o circulo para fora do labirinto (sair pelas bordas) para subir de nivel.");
+	desenhaTexto("O OBJETIVO do jogo é levar a encomenda para fora do labirinto, para isso saia com o carteiro");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- MOVIMENTOS: Utilize as setas do teclado para mover o circulo.");
+	desenhaTexto("pelas bordas do labirinto, assim ele avancara para o proximo nivel.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- CORES: Para mudar a cor de qualquer objeto (CIRCULO, PAREDES DO LABIRINTO, FUNDO) ");
+	desenhaTexto("- MOVIMENTOS: Utilize as setas do teclado para mover o carteiro.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"         basta clicar no objeto em questao.");
+	desenhaTexto("- CORES: Para mudar a cor de qualquer objeto (CIRCULO, PAREDES DO LABIRINTO, FUNDO) ");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DESAFIO: Se o circulo se mover em direcao a qualquer parede do labirinto");
+	desenhaTexto("         basta clicar no objeto em questao.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"           entao ele volta a posicao inicial no labirinto e perde uma vida.");
+	desenhaTexto("- DESAFIO: Se o carteiro colidir com qualquer INIMIGO então ele");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- FIM: O jogo acaba quando suas vidas terminarem.");
+	desenhaTexto("           volta a posicao inicial no meio do labirinto e perde uma vida.");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("- FIM: O jogo acaba quando suas vidas terminarem.");
 	glColor3f(0,1,1);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"                   PRESSIONE BARRA DE ESPACOS PARA COMECAR");
+	desenhaTexto("                   PRESSIONE BARRA DE ESPACOS ou ENTER PARA COMECAR");
 	glColor3f(1,1,1);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DICA: A barra de espacos tambem funciona para fazer o circulo piscar.");
+	desenhaTexto("- DICA: A barra de espacos tambem funciona para fazer o circulo piscar.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"- DICA 2: Ao subir de nivel voce fica novamente com 4 vidas.");
+	desenhaTexto("- DICA 2: Ao subir de nivel voce fica novamente com 4 vidas.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"BOA SORTE E BOM JOGO!");
+	desenhaTexto("BOA SORTE E BOM JOGO!");
 }
 void desenhaNovoNivel(){
 	char nivel[10];
 	sprintf(nivel, "%d", GAME_LEVEL);
 	glColor3f(1,1,1);
 	glPushMatrix();
-	glTranslatef(ORTHO_LEFT*0.5,ORTHO_TOP*0.3,0);
+	glTranslatef(ORTHO_LEFT*0.75,ORTHO_TOP*0.3,0);
 	glLineWidth(2); // define a espessura da linha
-	desenhaTextoStroke(GLUT_STROKE_ROMAN,"Wastelands Maze");
+	desenhaTextoStroke(GLUT_STROKE_ROMAN,(char *) GAME_TITLE);
 	glPopMatrix();
 
 	glColor3f(1,1,1);
 	int textoX =  ORTHO_LEFT*0.8, textoY = ORTHO_BOTTOM*0.1;
 	glRasterPos2f(textoX,textoY);
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"BEM VINDO AO NIVEL");
+	desenhaTexto("BEM VINDO AO NIVEL");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15, nivel);
+	desenhaTexto( nivel);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"PRESSIONE BARRA DE ESPACOS PARA CONTINUAR NO LABIRINTO");
+	desenhaTexto("PRESSIONE BARRA DE ESPACOS ou ENTER PARA CONTINUAR NO LABIRINTO");
 }
 void desenhaFimDeJogo(){
 	char mensagem[50];
@@ -921,15 +922,15 @@ void desenhaFimDeJogo(){
 	int textoX =  ORTHO_LEFT*0.8, textoY = ORTHO_BOTTOM*0.1;
 	glColor3f(1,0,0);
 	glRasterPos2f(textoX,textoY);
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"FIM DE JOGO");
+	desenhaTexto("FIM DE JOGO");
 	glColor3f(1,1,1);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"Uma pena! Tente jogar melhor da proxima vez!");
+	desenhaTexto("Uma pena! Tente jogar melhor da proxima vez!");
 	glRasterPos2f(textoX,(textoY-=50));
 	sprintf(mensagem, "Pelo menos tu chegou ao nivel %d.", GAME_LEVEL);
-	desenhaTexto(GLUT_BITMAP_9_BY_15, mensagem);
+	desenhaTexto( mensagem);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto(GLUT_BITMAP_9_BY_15,"PRESSIONE BARRA DE ESPACOS PARA REINICIAR O JOGO");
+	desenhaTexto("PRESSIONE BARRA DE ESPACOS PARA REINICIAR O JOGO");
 }
 void desenhaParabens(){
 
@@ -1155,12 +1156,13 @@ void piscarLabirinto(int value) {
 //======================================================================//
 void myKeyboardFunc(unsigned char key, int x, int y) {
 	switch (key) {
-		case 27:
+		case 27:	//	ESC - ESCAPE
 			exit(0);
+		case 13:	//	ENTER
 		case GLUT_SPACEBAR_KEY:
 			if (GAME_STATUS == GAME_WELCOME || GAME_STATUS == GAME_NEWLEVEL)
 				GAME_STATUS = GAME_START;
-			else if (GAME_STATUS == GAME_START) {
+			else if (GAME_STATUS == GAME_START && key == GLUT_SPACEBAR_KEY) {
 				CIRCLE_FLASH = !CIRCLE_FLASH;
 				glutTimerFunc(100,piscarCirculo,1);
 			}
@@ -1344,6 +1346,7 @@ void novaDificuldade(int nivel, bool resetarCores) {
 	vidas = CIRCLE_INITIAL_LIFE;
 	if (resetarCores)
 		novaCor(RESET_COLOR);
+	glutTimerFunc(100,piscarCirculo,1);
 
 	SRD[X_MIN] = 0;
 	SRD[X_MAX] = WINDOW_WIDTH;
@@ -1390,7 +1393,7 @@ int main(int argc, char** argv)
  	glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGTH);
 	glutInitWindowPosition(10,10);
 
-	sprintf(tituloJanela, "Wastelands Maze 2.0 by Ricardo e Ruan Medeiros - Vidas: %d", vidas);
+	sprintf(tituloJanela, "Wastelands Maze 2.0 by Ricardo, Ruan Medeiros e Jose Adolfo - Vidas: %d", vidas);
 	glutCreateWindow(tituloJanela);
 	OpenClipboard(NULL);
 	Inicializa();
