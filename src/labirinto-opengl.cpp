@@ -191,6 +191,7 @@ bool isOnMaze(double x,double y){
 	else if (OBJECT_CLASS == OBJECT_SQUARE){
 		return false;
 	}
+	return false;
 }
 bool isOnLimit(int x,int y)
 {	if(x <= ORTHO_LEFT || x >= ORTHO_RIGHT || y<= ORTHO_BOTTOM || y >= ORTHO_TOP)
@@ -221,6 +222,7 @@ bool verificarColisaoCirculo() {
 			return false;
 	}
 	//raio = CIRCLE_RADIUS;
+	return false;
 }
 bool verificarColisaoQuadrado(){	//	Verifica se vai haver colisão detectando se os segmentos de reta do quadrado
 									//	Passam por alguma parede do labirinto
@@ -253,7 +255,7 @@ bool verificarColisao(){
 		return verificarColisaoCirculo();
 	else if (OBJECT_CLASS == OBJECT_SQUARE)
 		return verificarColisaoQuadrado();
-
+	return false;
 }
 void verificarVitoria()
 {
@@ -497,6 +499,7 @@ void desenhaLabirintoLuz(void){
 	}
 	glEnd();
 }
+
 //======================================================================//
 void desenhaQuadrado(void){
 	glEnable(GL_BLEND);
