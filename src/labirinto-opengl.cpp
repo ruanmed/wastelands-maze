@@ -356,7 +356,7 @@ void desenhaLabirintoLuz(void){
 				glVertex2f(ORTHO_LEFT+(meshX+1)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
 				break;
 			}
-			else {
+			else if (0){
 				int meshXD = meshX+1;
 				// Se não houver uma parede acima então tem que ser verificadas as paredes à esquerda e à direita
 				for (int l = 0;meshX >= 0 && l < (int)floor(MAZE_LIGHT_MULT); l++){
@@ -385,7 +385,7 @@ void desenhaLabirintoLuz(void){
 	for (int c = 0; c <  (int)floor(MAZE_LIGHT_MULT); c++) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP);
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP) - c;
-		printf("RAIO 6____> (%d, %d)\n",meshX,meshY);
+		//printf("RAIO 6____> (%d, %d)\n",meshX,meshY);
 		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
 			break;
 		else {	// Se não houver uma parede abaixo então tem que ser verificada a parede logo ao lado direito desta
@@ -394,12 +394,12 @@ void desenhaLabirintoLuz(void){
 				glVertex2f(ORTHO_LEFT+(meshX+1)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
 				break;
 			}
-			else {
+			else if (0){
 				meshY--;
 				int meshXD = meshX;
 				meshX++;
 				for (int l = 0; meshX < MESH_WIDTH_PARTS && l < (int)floor(MAZE_LIGHT_MULT); l++){
-					printf("RAIO 66666666666____> (%d, %d)\n",meshX,meshY);
+					//printf("RAIO 66666666666____> (%d, %d)\n",meshX,meshY);
 					if (maze[meshX][meshY].side == 0){ // Se exister a parede ao lado então devem ser apagadas as subsequentes que estão "atrás"dela
 						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY)*MAZE_STEP);
 						glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
@@ -433,7 +433,7 @@ void desenhaLabirintoLuz(void){
 				glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
 				break;
 			}
-			else {
+			else if (0){
 				// Se não houver uma parede à direita então tem que ser verificada a parede logo ao lado direito desta
 				int meshYE = meshY;
 				meshY++;
@@ -460,7 +460,7 @@ void desenhaLabirintoLuz(void){
 	for (int c = 0; c < (int)floor(MAZE_LIGHT_MULT); c++) {
 		meshX = floor((xc-ORTHO_LEFT)/MAZE_STEP) - c;
 		meshY = floor((yc-ORTHO_BOTTOM)/MAZE_STEP);
-		printf("RAIO 8____> (%d, %d)\n",meshX,meshY);
+		//printf("RAIO 8____> (%d, %d)\n",meshX,meshY);
 		if (meshX < 0 || meshY < 0 || meshX >= MESH_WIDTH_PARTS || meshY >= MESH_HEIGTH_PARTS)
 			break;
 		else {
@@ -469,7 +469,7 @@ void desenhaLabirintoLuz(void){
 				glVertex2f(ORTHO_LEFT+(meshX)*MAZE_STEP,ORTHO_BOTTOM+(meshY+1)*MAZE_STEP);
 				break;
 			}
-			else {
+			else if (0){
 				meshX--;
 				if (meshX < 0)
 					break;
@@ -751,7 +751,7 @@ void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdad
 		}
 	}
 
-	desenhaLabirintoLuz();
+	//desenhaLabirintoLuz();
 	desenhaLuzQuadrada();
 }
 void getMeshGridCenter(int InLMesh,int InCMesh,double &OutXc,double &OutYc)//recebe a linha e a coluna do mesh e retorna seu ponto central no ortho 2d
@@ -838,7 +838,7 @@ void desenhaVidas(){
 		GAME_STATUS = GAME_OVER;
 	}
 }
-void desenhaTexto(void *font, char *string) {	// Exibe caractere a caractere
+void desenhaTexto(void *font, const char *string) {	// Exibe caractere a caractere
 	while(*string)
 		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,*string++);
 }
@@ -847,13 +847,15 @@ void desenhaTextoStroke(void *font, char *string) {	// Exibe caractere a caracte
 		glutStrokeCharacter(GLUT_STROKE_ROMAN,*string++);
 }
 void desenhaBoasVindas(){
+	string print;
 	// Posiciona o texto stroke usando transformações geométricas
 	glPushMatrix();
 	glTranslatef(ORTHO_LEFT*0.5,ORTHO_BOTTOM*0.2-100,0);
 	//glScalef(0.2, 0.2, 0.2); // diminui o tamanho do fonte
 	//glRotatef(15, 0,0,1); // rotaciona o texto
 	glLineWidth(2); // define a espessura da linha
-	desenhaTextoStroke(GLUT_STROKE_ROMAN,"Wastelands Maze 2.0");
+	print = "Wastelands Maze 2.0";
+	desenhaTextoStroke(GLUT_STROKE_ROMAN,(char *) print.c_str());
 	glPopMatrix();
 
 	// Posição no universo onde o texto bitmap será colocado
@@ -1390,7 +1392,7 @@ int main(int argc, char** argv)
 
 	sprintf(tituloJanela, "Wastelands Maze 2.0 by Ricardo e Ruan Medeiros - Vidas: %d", vidas);
 	glutCreateWindow(tituloJanela);
-
+	OpenClipboard(NULL);
 	Inicializa();
 	glutDisplayFunc 	( myDisplayFunc	);
 	glutMouseFunc   	( myMouseFunc   );
