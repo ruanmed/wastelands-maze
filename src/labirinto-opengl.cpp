@@ -50,6 +50,21 @@
 #define GAME_WIN 3
 #define GAME_NEWLEVEL 4
 
+#define MENU_DIFFICULTY_INCREASE 1
+#define MENU_DIFFICULTY_DECREASE 2
+#define MENU_DIFFICULTY_SUPER_INCREASE 3
+#define MENU_DIFFICULTY_SUPER_DECREASE 4
+#define MENU_OPTIONS_RESTART 1
+#define MENU_OPTIONS_RESET 2
+#define MENU_OPTIONS_RESET_MAZE 3
+#define MENU_OPTIONS_RESET_COLORS 4
+#define MENU_OPTIONS_RESET_LEVEL 5
+#define MENU_COLORS_CHANGE_CIRCLE 1
+#define MENU_COLORS_CHANGE_WALLS 2
+#define MENU_COLORS_CHANGE_BACKGROUND 3
+#define MENU_COLORS_RESET 4
+#define MENU_COLORS_FLASH_MAZE 5
+
 //#define MAZE_LIGHT_OFF 0
 //#define MAZE_LIGHT_ON 1
 
@@ -66,7 +81,7 @@ int GAME_LEVEL = 1;
 
 int OBJECT_CLASS = OBJECT_SQUARE;
 int CIRCLE_RADIUS = 5*GAME_LEVEL;
-bool CIRCLE_FLASH = true;
+bool CIRCLE_FLASH = false;
 double CIRCLE_RADIUS_DECREASE_TIME_CONSTANT = 30;
 double CIRCLE_POINT_SIZE = 1.0f;
 double CIRCLE_CENTER_SPEED = (1/4.0);
@@ -971,7 +986,6 @@ void carregarImagens(void){
 
 //======================================================================//
 
-//==== The Menu Functions ==============================================//
 void novaCor(int elemento){
 	switch (elemento) {
 		case CIRCLE_COLOR:
@@ -998,27 +1012,49 @@ void novaCor(int elemento){
 			corLabiR = corLabiG = corLabiB = 0.01;
 			break;
 		case FLASH_COLOR:
-			corCircR = fabs(1.0-corCircR);
-			corCircG = fabs(1.0-corCircG);
-			corCircB = fabs(1.0-corCircB);
-			corLabiR = fabs(1.0-corLabiR);
-			corLabiG = fabs(1.0-corLabiG);
-			corLabiB = fabs(1.0-corLabiB);
+			if (CIRCLE_FLASH){
+				corCircR = fabs(1.0-corCircR);
+				corCircG = fabs(1.0-corCircG);
+				corCircB = fabs(1.0-corCircB);
+			}
+			if (MAZE_FLASH){
+				corLabiR = fabs(1.0-corLabiR);
+				corLabiG = fabs(1.0-corLabiG);
+				corLabiB = fabs(1.0-corLabiB);
+			}
 			break;
 	}
 }
+//======================================================================//
+void piscarCirculo(int value) {
+	if (CIRCLE_FLASH) {
+		glutTimerFunc(150,piscarCirculo,1);
+		novaCor(FLASH_COLOR);
+		glutPostRedisplay();
+	}
+}
+void piscarLabirinto(int value) {
+	if (MAZE_FLASH) {
+		glutTimerFunc(150,piscarLabirinto,1);
+		novaCor(FLASH_COLOR);
+		glutPostRedisplay();
+	}
+}
+//======================================================================//
+
+//==== The Menu Functions ==============================================//
 void menuDificuldade(int op) {
 	switch (op){
-		case 1: // Aumentar nível
+		case MENU_DIFFICULTY_INCREASE: // Aumentar nível
 			novaDificuldade(GAME_LEVEL+1,false);
 			break;\
-		case 2: // Diminuir nível
+		case MENU_DIFFICULTY_DECREASE: // Diminuir nível
 			novaDificuldade(GAME_LEVEL-1,false);
 			break;
-		case 3: // Aumentar 10 níveis
+		case MENU_DIFFICULTY_SUPER_INCREASE: // Aumentar 10 níveis
 			novaDificuldade(GAME_LEVEL+10,false);
 			break;
-		case 4: // Diminuir 10 níveis
+		case MENU_DIFFICULTY_SUPER_DECREASE: // Diminuir 10 níveis
 			novaDificuldade(GAME_LEVEL-10,false);
 			break;
 	}
@@ -1026,21 +1062,21 @@ void menuDificuldade(int op) {
 }
 void menuOpcoes(int op) {
 	switch (op){
-		case 1: // 	Reiniciar jogo (volta ao nível 1)
+		case MENU_OPTIONS_RESTART: // 	Reiniciar jogo (volta ao nível 1)
 			novaDificuldade(1,true);
 			break;
-		case 2: // 	Reiniciar jogo (volta à tela inicial)
+		case MENU_OPTIONS_RESET: // 	Reiniciar jogo (volta à tela inicial)
 			novaDificuldade(1,true);
 			GAME_STATUS = GAME_WELCOME;
 			break;
-		case 3:	//	Resetar labirinto (continua no nível atual)
+		case MENU_OPTIONS_RESET_MAZE:	//	Resetar labirinto (continua no nível atual)
 			generateRandomMaze();
 			retornarInicio();
 			break;
-		case 4:	//	Resetar cores do jogo
+		case MENU_OPTIONS_RESET_COLORS:	//	Resetar cores do jogo
 			novaCor(RESET_COLOR);
 			break;
-		case 5: //	Voltar ao início do level atual
+		case MENU_OPTIONS_RESET_LEVEL: //	Voltar ao início do level atual
 			retornarInicio();
 			break;
 	}
@@ -1048,20 +1084,22 @@ void menuOpcoes(int op) {
 }
 void menuCores(int op){
 	switch (op){
-		case 1: // Mudar cor do círculo
+		case MENU_COLORS_CHANGE_CIRCLE: // Mudar cor do círculo
 			novaCor(CIRCLE_COLOR);
 			break;
-		case 2:	//	Mudar cor das paredes do labirinto
+		case MENU_COLORS_CHANGE_WALLS:	//	Mudar cor das paredes do labirinto
 			novaCor(MAZE_COLOR);
 			break;
-		case 3: // 	Mudar cor do fundo
+		case MENU_COLORS_CHANGE_BACKGROUND: // 	Mudar cor do fundo
 			novaCor(BACK_COLOR);
 			break;
-		case 4: //	Resetar cores
+		case MENU_COLORS_RESET: //	Resetar cores
 			novaCor(RESET_COLOR);
 			break;
-		case 5: // 	Realçar círculo
-			CIRCLE_FLASH = !CIRCLE_FLASH;
+		case MENU_COLORS_FLASH_MAZE: // 	Piscar ou parar de piscar labirinto
+			MAZE_FLASH = !MAZE_FLASH;
+			if (MAZE_FLASH)
+					glutTimerFunc(150,piscarLabirinto,1);
 			break;
 	}
 	glutPostRedisplay();
@@ -1072,21 +1110,23 @@ void menuPrincipal(int op){
 void exibirMenu() {
 	int menu, dificuldade, opcoes, cores;
 	dificuldade = glutCreateMenu(menuDificuldade);
-		glutAddMenuEntry("[+] Aumentar nivel",1);
-		glutAddMenuEntry("[-] Diminuir nivel",2);
-		glutAddMenuEntry("[++] Aumentar 10 niveis",3);
-		glutAddMenuEntry("[--] Diminuir 10 niveis",4);
+
+		glutAddMenuEntry("[+] Aumentar nivel",MENU_DIFFICULTY_INCREASE);
+		glutAddMenuEntry("[-] Diminuir nivel",MENU_DIFFICULTY_DECREASE);
+		glutAddMenuEntry("[++] Aumentar 10 niveis",MENU_DIFFICULTY_SUPER_INCREASE);
+		glutAddMenuEntry("[--] Diminuir 10 niveis",MENU_DIFFICULTY_SUPER_DECREASE);
 	opcoes = glutCreateMenu(menuOpcoes);
-		glutAddMenuEntry("Reiniciar jogo (volta ao nivel 1)",1);
-		glutAddMenuEntry("Reiniciar jogo (volta a tela inicial)",2);
-		glutAddMenuEntry("Resetar labirinto (continua no nivel atual",3);
-		glutAddMenuEntry("Resetar cores",4);
-		glutAddMenuEntry("Voltar ao inicio do level atual",5);
+		glutAddMenuEntry("Reiniciar jogo (volta ao nivel 1)",MENU_OPTIONS_RESTART);
+		glutAddMenuEntry("Reiniciar jogo (volta a tela inicial)",MENU_OPTIONS_RESET);
+		glutAddMenuEntry("Resetar labirinto (continua no nivel atual",MENU_OPTIONS_RESET_MAZE);
+		glutAddMenuEntry("Resetar cores",MENU_OPTIONS_RESET_COLORS);
+		glutAddMenuEntry("Voltar ao inicio do level atual",MENU_OPTIONS_RESET_LEVEL);
 	cores = glutCreateMenu(menuCores);
-		glutAddMenuEntry("Mudar cor do circulo",1);
-		glutAddMenuEntry("Mudar cor das paredes do labirinto",2);
-		glutAddMenuEntry("Mudar cor do fundo",3);
-		glutAddMenuEntry("Resetar cores",4);
+		glutAddMenuEntry("Mudar cor do circulo",MENU_COLORS_CHANGE_CIRCLE);
+		glutAddMenuEntry("Mudar cor das paredes do labirinto",MENU_COLORS_CHANGE_WALLS);
+		glutAddMenuEntry("Mudar cor do fundo",MENU_COLORS_CHANGE_BACKGROUND);
+		glutAddMenuEntry("Resetar cores",MENU_COLORS_RESET);
+		glutAddMenuEntry("Piscar ou parar de piscar labirinto",MENU_COLORS_FLASH_MAZE);
 	menu = glutCreateMenu(menuPrincipal);
 		glutAddSubMenu("Dificuldade",dificuldade);
 		glutAddSubMenu("Opcoes",opcoes);
@@ -1139,20 +1179,7 @@ void myMouseFunc(int button, int state, int x, int y){
 void myMotionFunc(int x, int y){
 
 }
-void piscarCirculo(int value) {
-	if (CIRCLE_FLASH) {
-		glutTimerFunc(200,piscarCirculo,1);
-		novaCor(FLASH_COLOR);
-		glutPostRedisplay();
-	}
-}
-void piscarLabirinto(int value) {
-	if (MAZE_FLASH) {
-		glutTimerFunc(200,piscarLabirinto,1);
-		novaCor(FLASH_COLOR);
-		glutPostRedisplay();
-	}
-}
+
 //======================================================================//
 void myKeyboardFunc(unsigned char key, int x, int y) {
 	switch (key) {
@@ -1163,8 +1190,8 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 			if (GAME_STATUS == GAME_WELCOME || GAME_STATUS == GAME_NEWLEVEL)
 				GAME_STATUS = GAME_START;
 			else if (GAME_STATUS == GAME_START && key == GLUT_SPACEBAR_KEY) {
-				CIRCLE_FLASH = !CIRCLE_FLASH;
-				glutTimerFunc(100,piscarCirculo,1);
+				menuCores(MENU_COLORS_FLASH_MAZE);
+
 			}
 			else if (GAME_STATUS == GAME_OVER){
 				novaDificuldade(1,true);
@@ -1346,7 +1373,7 @@ void novaDificuldade(int nivel, bool resetarCores) {
 	vidas = CIRCLE_INITIAL_LIFE;
 	if (resetarCores)
 		novaCor(RESET_COLOR);
-	glutTimerFunc(100,piscarCirculo,1);
+
 
 	SRD[X_MIN] = 0;
 	SRD[X_MAX] = WINDOW_WIDTH;
@@ -1379,6 +1406,8 @@ void Inicializa (void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	carregarImagens();
+
+	glutTimerFunc(150,piscarLabirinto,1);
 }
 
 // Programa principal
