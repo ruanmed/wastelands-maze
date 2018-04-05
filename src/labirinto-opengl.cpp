@@ -49,6 +49,7 @@
 #define GAME_START 2
 #define GAME_WIN 3
 #define GAME_NEWLEVEL 4
+#define GAME_HELP 5
 
 #define MENU_DIFFICULTY_INCREASE 1
 #define MENU_DIFFICULTY_DECREASE 2
@@ -64,6 +65,8 @@
 #define MENU_COLORS_CHANGE_BACKGROUND 3
 #define MENU_COLORS_RESET 4
 #define MENU_COLORS_FLASH_MAZE 5
+#define MENU_EXIT 10
+#define MENU_HELP 11
 
 //#define MAZE_LIGHT_OFF 0
 //#define MAZE_LIGHT_ON 1
@@ -77,6 +80,7 @@
 #define OBJECT_CIRCLE 0
 
 int GAME_STATUS = 1;
+int GAME_PREVIOUS_STATUS = 1;
 int GAME_LEVEL = 1;
 
 int OBJECT_CLASS = OBJECT_SQUARE;
@@ -131,7 +135,7 @@ double corVidaR,corVidaG,corVidaB;
 double corFundR,corFundG,corFundB;
 double corLabiR,corLabiG,corLabiB;
 //  SISTEMA = {Xmin,Xmax,Ymin,Ymax]
-double SRU[4] = {ORTHO_LEFT,ORTHO_RIGHT,ORTHO_BOTTOM,ORTHO_TOP};
+double SRU[4] = {(double) ORTHO_LEFT,(double) ORTHO_RIGHT,(double) ORTHO_BOTTOM,(double) ORTHO_TOP};
 double SRD[4] = {0,0,0,0};
 char tituloJanela[50];
 
@@ -770,6 +774,7 @@ void desenhaLuz(void){	//	Essa função na verdade é uma mentira, ela na verdad
 	//desenhaLabirintoLuz();
 	desenhaLuzQuadrada();
 }
+/*
 void getMeshGridCenter(int InLMesh,int InCMesh,double &OutXc,double &OutYc)//recebe a linha e a coluna do mesh e retorna seu ponto central no ortho 2d
 {
 	OutXc = (InCMesh+0.5)*(MAZE_STEP)+ORTHO_LEFT;
@@ -805,6 +810,7 @@ void desenhaLuz2(void)//Essa função também é uma mentira
 	//	Definindo a cor da área sem luz
 	glColor3f(corFundR-0.1, corFundG-0.1, corFundB-0.1);
 }
+*/
 //======================================================================//
 void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter parametros ou eu não sei como...
 {
@@ -876,16 +882,17 @@ void desenhaBoasVindas(){
 	//glScalef(0.2, 0.2, 0.2); // diminui o tamanho do fonte
 	//glRotatef(15, 0,0,1); // rotaciona o texto
 	glLineWidth(2); // define a espessura da linha
-	desenhaTextoStroke(GLUT_STROKE_ROMAN,GAME_TITLE);
+	desenhaTextoStroke(GLUT_STROKE_ROMAN,(char *) GAME_TITLE);
 	glPopMatrix();
 
 	// Posição no universo onde o texto bitmap será colocado
 	glColor3f(1,1,1);
 	//glScalef(1.0, 1.0, 1.0); // diminui o tamanho do fonte
 	//glRotatef(15, 0,0,1); // rotaciona o texto
+
 	int textoX =  ORTHO_LEFT*0.8, textoY = ORTHO_TOP*0.8;
 	glRasterPos2f(textoX,textoY);
-	desenhaTexto("O OBJETIVO do jogo é levar a encomenda para fora do labirinto, para isso saia com o carteiro");
+	desenhaTexto("O OBJETIVO do jogo e levar a encomenda para fora do labirinto, para isso saia com o carteiro");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("pelas bordas do labirinto, assim ele avancara para o proximo nivel.");
 	glRasterPos2f(textoX,(textoY-=50));
@@ -895,7 +902,7 @@ void desenhaBoasVindas(){
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("         basta clicar no objeto em questao.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto("- DESAFIO: Se o carteiro colidir com qualquer INIMIGO então ele");
+	desenhaTexto("- DESAFIO: Se o carteiro colidir com qualquer INIMIGO entao ele");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("           volta a posicao inicial no meio do labirinto e perde uma vida.");
 	glRasterPos2f(textoX,(textoY-=50));
@@ -908,8 +915,53 @@ void desenhaBoasVindas(){
 	desenhaTexto("- DICA: A barra de espacos tambem funciona para fazer o circulo piscar.");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("- DICA 2: Ao subir de nivel voce fica novamente com 4 vidas.");
+	glColor3f(1,0,1);
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto("BOA SORTE E BOM JOGO!");
+	desenhaTexto("BOA SORTE E BOM JOGO! - APERTE h PARA VER O MENU DE AJUDA");
+	glColor3f(1,1,1);
+}
+void desenhaAjuda(){
+	int textoX =  ORTHO_LEFT*0.8, textoY = ORTHO_TOP*0.8;
+
+	glColor3f(1,1,1);
+	glRasterPos2f(textoX,textoY);
+	desenhaTexto("AJUDA - AS TECLAS/BOTOES DO MOUSE UTILIZADOS NESSE JOGO SAO:");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("ENTER/BARRA DE ESPACOS = Comeca o jogo");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("SETAS DIRECIONAIS DO TECLADO = Move carteiro");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("BOTAO DIREITO DO MOUSE = Abre menu de opcoes");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("BOTAO ESQUEDO DO MOUSE = Muda cor do objeto clicado");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("BARRA DE ESPACOS = Habilita o efeito de luz nas paredes do labirinto");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("ESC = Sai do jogo");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("h = Abre ou fecha essa tela de ajuda");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("r = Reseta a configuracao do labirinto no nivel atual");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("R = Reinicia o jogo voltando a tela inicial");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("n = Reseta as cores de todos os objetos para as cores padrão");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("b = Muda a cor do fundo para uma cor aleatoria");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("m = Muda a cor das paredes para uma cor aleatoria");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("FUNCIONALIDADES DE TRAPACA (CHEATS)");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("L = Liga ou desliga a luz no labirinto");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("i = Aumenta o nivel do labirinto atual em 1 nivel");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("d = Diminui o nivel do labirinto atual em 1 nivel");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("I = Aumenta o nivel do labirinto atual em 10 niveis");
+	glRasterPos2f(textoX,(textoY-=50));
+	desenhaTexto("D = Diminui o nivel do labirinto atual em 10 niveis");
 }
 void desenhaNovoNivel(){
 	char nivel[10];
@@ -937,7 +989,7 @@ void desenhaFimDeJogo(){
 	glPushMatrix();
 	glTranslatef(ORTHO_LEFT*0.5,ORTHO_TOP*0.3,0);
 	glLineWidth(2); // define a espessura da linha
-	desenhaTextoStroke(GLUT_STROKE_ROMAN,"Wastelands Maze");
+	desenhaTextoStroke(GLUT_STROKE_ROMAN,(char *) "Wastelands Maze");
 	glPopMatrix();
 
 	glColor3f(1,1,1);
@@ -1112,7 +1164,22 @@ void menuCores(int op){
 	glutPostRedisplay();
 }
 void menuPrincipal(int op){
-
+	switch (op){
+		case MENU_HELP:
+			if (GAME_STATUS == GAME_HELP){
+				GAME_STATUS = GAME_PREVIOUS_STATUS;
+			}
+			else {
+				GAME_PREVIOUS_STATUS = GAME_STATUS;
+				GAME_STATUS = GAME_HELP;
+			}
+			break;
+		case MENU_EXIT:
+			exit(0);
+			break;
+		default:
+			break;
+	}
 }
 void exibirMenu() {
 	int menu, dificuldade, opcoes, cores;
@@ -1135,9 +1202,11 @@ void exibirMenu() {
 		glutAddMenuEntry("Resetar cores",MENU_COLORS_RESET);
 		glutAddMenuEntry("Piscar ou parar de piscar labirinto",MENU_COLORS_FLASH_MAZE);
 	menu = glutCreateMenu(menuPrincipal);
-		glutAddSubMenu("Dificuldade",dificuldade);
-		glutAddSubMenu("Opcoes",opcoes);
-		glutAddSubMenu("Cores",cores);
+		glutAddSubMenu("DIFICULDADE",dificuldade);
+		glutAddSubMenu("OPCOES",opcoes);
+		glutAddSubMenu("CORES",cores);
+		glutAddMenuEntry("AJUDA",MENU_HELP);
+		glutAddMenuEntry("SAIR",MENU_EXIT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
@@ -1190,9 +1259,11 @@ void myMotionFunc(int x, int y){
 //======================================================================//
 void myKeyboardFunc(unsigned char key, int x, int y) {
 	switch (key) {
-		case 27:	//	ESC - ESCAPE
-			exit(0);
-		case 13:	//	ENTER
+		// TECLAS DE FUNCIONALIDADES DO JOGO
+		case 27:	//	ESC - ESCAPE - GLUT_ESCAPE_KEY
+			menuPrincipal(MENU_EXIT);
+			break;
+		case 13:	//	ENTER - GLUT_ENTER_KEY
 		case GLUT_SPACEBAR_KEY:
 			if (GAME_STATUS == GAME_WELCOME || GAME_STATUS == GAME_NEWLEVEL)
 				GAME_STATUS = GAME_START;
@@ -1205,20 +1276,8 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 				GAME_STATUS = GAME_WELCOME;
 			}
 			break;
-		case 'l':
-			MAZE_LIGHT_STATUS = (!MAZE_LIGHT_STATUS);
-			break;
-		case 'i':
-			menuDificuldade(MENU_DIFFICULTY_INCREASE);
-			break;
-		case 'I':
-			menuDificuldade(MENU_DIFFICULTY_SUPER_INCREASE);
-			break;
-		case 'd':
-			menuDificuldade(MENU_DIFFICULTY_DECREASE);
-			break;
-		case 'D':
-			menuDificuldade(MENU_DIFFICULTY_SUPER_DECREASE);
+		case 'h':
+			menuPrincipal(MENU_HELP);
 			break;
 		case 'r':
 			menuOpcoes(MENU_OPTIONS_RESET_MAZE);
@@ -1234,6 +1293,22 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 			break;
 		case 'm':
 			menuCores(MENU_COLORS_CHANGE_WALLS);
+			break;
+		// TECLAS DE TRAPAÇA DO JOGO - CHEATS
+		case 'L':
+			MAZE_LIGHT_STATUS = (!MAZE_LIGHT_STATUS);
+			break;
+		case 'i':
+			menuDificuldade(MENU_DIFFICULTY_INCREASE);
+			break;
+		case 'I':
+			menuDificuldade(MENU_DIFFICULTY_SUPER_INCREASE);
+			break;
+		case 'd':
+			menuDificuldade(MENU_DIFFICULTY_DECREASE);
+			break;
+		case 'D':
+			menuDificuldade(MENU_DIFFICULTY_SUPER_DECREASE);
 			break;
 		default:
 			break;
@@ -1338,6 +1413,9 @@ void myDisplayFunc(){
 	}
 	else if (GAME_STATUS == GAME_OVER){
 		desenhaFimDeJogo();
+	}
+	else if (GAME_STATUS == GAME_HELP){
+		desenhaAjuda();
 	}
 
 	glutSwapBuffers();
