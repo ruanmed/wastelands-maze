@@ -42,6 +42,11 @@
 #define BACK_COLOR 3
 #define FLASH_COLOR 4
 
+#define RIGHT 1
+#define LEFT 2
+#define UP 3
+#define DOWN 4
+
 #define GLUT_SPACEBAR_KEY 32
 #define GAME_TITLE "Wastelands Maze 2.0"
 #define GAME_OVER 0
@@ -176,6 +181,40 @@ void resetMazeMesh(){
 			maze[l][c].side = 0;
 			maze[l][c].top = 0;
 		}
+}
+bool exitPathExists(int l, int c, int whereItCameFrom){	//	Entra em loop - precisa ser implementado um algoritmo de busca mesmo
+	char left, right, up, down;
+	printf ("L: %d, C: %d, WH: %d\n", l, c, whereItCameFrom);
+	if (l < 0 || l >=	MESH_WIDTH_PARTS - 1 || c < 0 || c >=	MESH_HEIGTH_PARTS - 1 )
+		return true;
+	else {
+		left = maze[l][c].side;
+		right = maze[l+1][c].side;
+		up = maze[l][c+1].top;
+		down = maze[l][c].top;
+
+		if (left == 1 && whereItCameFrom != RIGHT){ // 	se tiver aberto para a esquerda e
+													//	não veio de um movimento para a direita
+			if (exitPathExists(l-1,c,LEFT))
+				return true;
+		}
+		if (right == 1 && whereItCameFrom != LEFT){ // 	se tiver aberto para a direita e
+													//	não veio de um movimento para a esquerda
+			if (exitPathExists(l+1,c,RIGHT))
+				return true;
+		}
+		if (up == 1 && whereItCameFrom != DOWN){ 	// 	se tiver aberto para cima e
+													//	não veio de um movimento para baixa
+			if (exitPathExists(l,c+1,UP))
+				return true;
+		}
+		if (down == 1 && whereItCameFrom != UP){ 	// 	se tiver aberto para baixo e
+													//	não veio de um movimento para cima
+			if (exitPathExists(l,c-1,DOWN))
+				return true;
+		}
+	}
+	return false;
 }
 bool isOnMaze(double x,double y){
 	if (OBJECT_CLASS == OBJECT_CIRCLE) {
@@ -898,7 +937,7 @@ void desenhaBoasVindas(){
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("- MOVIMENTOS: Utilize as setas do teclado para mover o carteiro.");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto("- CORES: Para mudar a cor de qualquer objeto (CIRCULO, PAREDES DO LABIRINTO, FUNDO) ");
+	desenhaTexto("- CORES: Para mudar a cor de qualquer objeto (PAREDES DO LABIRINTO, FUNDO) ");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("         basta clicar no objeto em questao.");
 	glRasterPos2f(textoX,(textoY-=50));
@@ -1196,7 +1235,7 @@ void exibirMenu() {
 		glutAddMenuEntry("Resetar cores",MENU_OPTIONS_RESET_COLORS);
 		glutAddMenuEntry("Voltar ao inicio do level atual",MENU_OPTIONS_RESET_LEVEL);
 	cores = glutCreateMenu(menuCores);
-		glutAddMenuEntry("Mudar cor do circulo",MENU_COLORS_CHANGE_CIRCLE);
+		//glutAddMenuEntry("Mudar cor do circulo",MENU_COLORS_CHANGE_CIRCLE);
 		glutAddMenuEntry("Mudar cor das paredes do labirinto",MENU_COLORS_CHANGE_WALLS);
 		glutAddMenuEntry("Mudar cor do fundo",MENU_COLORS_CHANGE_BACKGROUND);
 		glutAddMenuEntry("Resetar cores",MENU_COLORS_RESET);
@@ -1275,6 +1314,15 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 				GAME_STATUS = GAME_WELCOME;
 			}
 			break;
+		/*
+		case 'c':
+
+			if (exitPathExists(floor((xc0-ORTHO_LEFT)/MAZE_STEP),floor((yc0-ORTHO_BOTTOM)/MAZE_STEP),0))
+				printf("VERDADE - TEM UM CAMINHO\n");
+			else
+				printf("NÃO EXISTE\n");
+			break;
+		//*/
 		case 'h':
 			menuPrincipal(MENU_HELP);
 			break;
