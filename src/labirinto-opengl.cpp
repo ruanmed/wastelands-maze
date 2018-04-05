@@ -840,9 +840,16 @@ void desenhaCirculo(void)//Infelizmente esta função de Call Back não pode ter
 void desenhaVidas(){
 	atualizarJanela();
 	if (vidas > 0) {
-		glColor3f(corVidaR, corVidaG, corVidaB);
+		//glColor3f(corVidaR, corVidaG, corVidaB);
 		glBegin(GL_QUADS);
 			for (int c = vidas; c; c--){
+				glColor3f(fabs(1-corFundR), fabs(1-corFundG), fabs(1-corFundB));
+				glVertex2d(ORTHO_LEFT+8+c*20,ORTHO_TOP-8);
+				glVertex2d(ORTHO_LEFT+22+c*20,ORTHO_TOP-8);
+				glVertex2d(ORTHO_LEFT+22+c*20,ORTHO_TOP-22);
+				glVertex2d(ORTHO_LEFT+8+c*20,ORTHO_TOP-22);
+
+				glColor3f(corVidaR, corVidaG, corVidaB);
 				glVertex2d(ORTHO_LEFT+10+c*20,ORTHO_TOP-10);
 				glVertex2d(ORTHO_LEFT+20+c*20,ORTHO_TOP-10);
 				glVertex2d(ORTHO_LEFT+20+c*20,ORTHO_TOP-20);
@@ -989,19 +996,19 @@ void carregarImagens(void){
 void novaCor(int elemento){
 	switch (elemento) {
 		case CIRCLE_COLOR:
-			//corCircR = Random::get(0,255)/255.0;
-			//corCircG = Random::get(0,255)/255.0;
-			//corCircB = Random::get(0,255)/255.0;
+			corCircR = Random::get(0,255)/255.0;
+			corCircG = Random::get(0,255)/255.0;
+			corCircB = Random::get(0,255)/255.0;
 			break;
 		case MAZE_COLOR:
-			//corLabiR = Random::get(0,255)/255.0;
-			//corLabiG = Random::get(0,255)/255.0;
-			//corLabiB = Random::get(0,255)/255.0;
+			corLabiR = Random::get(0,255)/255.0;
+			corLabiG = Random::get(0,255)/255.0;
+			corLabiB = Random::get(0,255)/255.0;
 			break;
 		case BACK_COLOR:
-			//corFundR = Random::get(0,255)/255.0;
-			//corFundG = Random::get(0,255)/255.0;
-			//corFundB = Random::get(0,255)/255.0;
+			corFundR = Random::get(0,255)/255.0;
+			corFundG = Random::get(0,255)/255.0;
+			corFundB = Random::get(0,255)/255.0;
 			break;
 		case RESET_COLOR:
 			corCircR = corCircG = corCircB = 0.9;
@@ -1009,7 +1016,7 @@ void novaCor(int elemento){
 			corVidaB = 1;
 			corFundR = 0.4;
 			corFundG = corFundB = fabs(1-corCircR);
-			corLabiR = corLabiG = corLabiB = 0.01;
+			corLabiR = corLabiG = corLabiB = 0.08;
 			break;
 		case FLASH_COLOR:
 			if (CIRCLE_FLASH){
@@ -1201,6 +1208,33 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 		case 'l':
 			MAZE_LIGHT_STATUS = (!MAZE_LIGHT_STATUS);
 			break;
+		case 'i':
+			menuDificuldade(MENU_DIFFICULTY_INCREASE);
+			break;
+		case 'I':
+			menuDificuldade(MENU_DIFFICULTY_SUPER_INCREASE);
+			break;
+		case 'd':
+			menuDificuldade(MENU_DIFFICULTY_DECREASE);
+			break;
+		case 'D':
+			menuDificuldade(MENU_DIFFICULTY_SUPER_DECREASE);
+			break;
+		case 'r':
+			menuOpcoes(MENU_OPTIONS_RESET_MAZE);
+			break;
+		case 'R':
+			menuOpcoes(MENU_OPTIONS_RESET);
+			break;
+		case 'b':
+			menuCores(MENU_COLORS_CHANGE_BACKGROUND);
+			break;
+		case 'n':
+			menuCores(MENU_COLORS_RESET);
+			break;
+		case 'm':
+			menuCores(MENU_COLORS_CHANGE_WALLS);
+			break;
 		default:
 			break;
 	}
@@ -1288,13 +1322,13 @@ void myDisplayFunc(){
 	}
 	else if (GAME_STATUS == GAME_START) {
 		desenhaLabirinto();
-		desenhaVidas();
 		if (MAZE_LIGHT_STATUS == true)
 			desenhaLuz();
 		if (OBJECT_CLASS == OBJECT_CIRCLE)
 			desenhaCirculo();
 		else if (OBJECT_CLASS == OBJECT_SQUARE)
 			desenhaQuadrado();
+		desenhaVidas();
 	}
 	else if (GAME_STATUS == GAME_NEWLEVEL){
 		desenhaNovoNivel();
