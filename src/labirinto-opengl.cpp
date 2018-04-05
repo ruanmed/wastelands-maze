@@ -892,9 +892,9 @@ void desenhaBoasVindas(){
 
 	int textoX =  ORTHO_LEFT*0.8, textoY = ORTHO_TOP*0.8;
 	glRasterPos2f(textoX,textoY);
-	desenhaTexto("O OBJETIVO do jogo e levar a encomenda para fora do labirinto, para isso saia com o carteiro");
+	desenhaTexto("O OBJETIVO do jogo e levar a encomenda para fora do labirinto, para isso ache a saida,");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto("pelas bordas do labirinto, assim ele avancara para o proximo nivel.");
+	desenhaTexto("ela fica pelas bordas do labirinto, assim voce avancara para o proximo nivel.");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("- MOVIMENTOS: Utilize as setas do teclado para mover o carteiro.");
 	glRasterPos2f(textoX,(textoY-=50));
@@ -945,7 +945,7 @@ void desenhaAjuda(){
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("R = Reinicia o jogo voltando a tela inicial");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto("n = Reseta as cores de todos os objetos para as cores padrão");
+	desenhaTexto("n = Reseta as cores de todos os objetos para as cores padrao");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("b = Muda a cor do fundo para uma cor aleatoria");
 	glRasterPos2f(textoX,(textoY-=50));
@@ -955,9 +955,9 @@ void desenhaAjuda(){
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("L = Liga ou desliga a luz no labirinto");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto("i = Aumenta o nivel do labirinto atual em 1 nivel");
+	desenhaTexto("i = Pula para o proximo nivel do labirinto");
 	glRasterPos2f(textoX,(textoY-=50));
-	desenhaTexto("d = Diminui o nivel do labirinto atual em 1 nivel");
+	desenhaTexto("d = Volta para o nivel anterior do labirinto");
 	glRasterPos2f(textoX,(textoY-=50));
 	desenhaTexto("I = Aumenta o nivel do labirinto atual em 10 niveis");
 	glRasterPos2f(textoX,(textoY-=50));
@@ -1269,7 +1269,6 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 				GAME_STATUS = GAME_START;
 			else if (GAME_STATUS == GAME_START && key == GLUT_SPACEBAR_KEY) {
 				menuCores(MENU_COLORS_FLASH_MAZE);
-
 			}
 			else if (GAME_STATUS == GAME_OVER){
 				novaDificuldade(1,true);
