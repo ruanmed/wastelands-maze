@@ -124,6 +124,7 @@ using Random = effolkronium::random_static;
 typedef struct {
 	char side;
 	char top;
+	char visited;
 }mesh;
 
 mesh **maze;
@@ -180,14 +181,19 @@ void resetMazeMesh(){
 		for(int c=0;c<MESH_HEIGTH_PARTS;c++){
 			maze[l][c].side = 0;
 			maze[l][c].top = 0;
+			maze[l][c].visited = 0;
 		}
 }
-bool exitPathExists(int l, int c, int whereItCameFrom){	//	Entra em loop - precisa ser implementado um algoritmo de busca mesmo
+bool exitPathExists(int l, int c, int whereItCameFrom){
 	char left, right, up, down;
-	printf ("L: %d, C: %d, WH: %d\n", l, c, whereItCameFrom);
+	//printf ("L: %d, C: %d, WH: %d\n", l, c, whereItCameFrom);
 	if (l < 0 || l >=	MESH_WIDTH_PARTS - 1 || c < 0 || c >=	MESH_HEIGTH_PARTS - 1 )
 		return true;
+	else if (maze[l][c].visited){
+		return false;
+	}
 	else {
+		maze[l][c].visited = 1;
 		left = maze[l][c].side;
 		right = maze[l+1][c].side;
 		up = maze[l][c+1].top;
@@ -1314,9 +1320,8 @@ void myKeyboardFunc(unsigned char key, int x, int y) {
 				GAME_STATUS = GAME_WELCOME;
 			}
 			break;
-		/*
+		//*
 		case 'c':
-
 			if (exitPathExists(floor((xc0-ORTHO_LEFT)/MAZE_STEP),floor((yc0-ORTHO_BOTTOM)/MAZE_STEP),0))
 				printf("VERDADE - TEM UM CAMINHO\n");
 			else
@@ -1546,6 +1551,10 @@ void novaDificuldade(int nivel, bool resetarCores) {
 //	xc = xc0 = -(ORTHO_WIDTH/2)+((ORTHO_WIDTH/MAZE_STEP/2)*MAZE_STEP) + MAZE_STEP/2;
 	yc = yc0 = ORTHO_BOTTOM+(MESH_HEIGTH_PARTS/2)*MAZE_STEP + MAZE_STEP/2 ;
 	xc = xc0 = ORTHO_LEFT+(MESH_WIDTH_PARTS/2)*MAZE_STEP + MAZE_STEP/2;
+
+	while (!exitPathExists(floor((xc0-ORTHO_LEFT)/MAZE_STEP),floor((yc0-ORTHO_BOTTOM)/MAZE_STEP),0)){
+		generateRandomMaze();
+	}
 	//printf("W: %d H: %d\n",	MESH_WIDTH_PARTS, MESH_HEIGTH_PARTS);
 }
 // Inicializa parâmetros de rendering
